@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>上海市房价评估系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{#    django服务器上使用#}
+    <script src="{% static 'node_modules/jquery/dist/jquery.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.css'%}">
+    <script src="{% static 'node_modules/popper.js/dist/popper.js' %}"></script>
+    <script src="{% static 'node_modules/bootstrap/dist/js/bootstrap.js' %}"></script>
+
+{#    调试时使用#}
+{#    <script src="../../static/node_modules/jquery/dist/jquery.js"></script>#}
+{#    <link rel="stylesheet" href="../../static/node_modules/bootstrap/dist/css/bootstrap.css">#}
+{#    <script src="../../static/node_modules/popper.js/dist/popper.js"></script>#}
+{#    <script src="../../static/node_modules/bootstrap/dist/js/bootstrap.js"></script>#}
+</head>
+
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="#">房价评估系统</a>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">首页</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="searchlandmark.html">评估</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">帮助</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">关于</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<br>
+
+<body>
+<div class="container-fluid">
+    <div class="jumbotron text-left">
+        <h1>请输入您房源的详细地址：</h1>
+        <p>填写详细地址，有利于更加准确地为您的房源估价</p>
+    </div>
+</div>
+<br>
+
+<div class="container">
+    <div class="row clearfix text-left">
+        <div class="col-12 column">
+            <form role="form" method="get" action="searchinput.html">
+                <div class="form-group">
+                    <label for="sel1">
+                        <h3>请选择您所在市辖区： <small>上海市 -</small></h3>
+                    </label>
+                    <select class="form-control" id="sel1" name="area">
+                        <option value="1">黄浦区</option>
+                        <option value="2">徐汇区</option>
+                        <option value="3">长宁区</option>
+                        <option value="4">静安区</option>
+                        <option value="5">普陀区</option>
+                        <option value="6">虹口区</option>
+                        <option value="7">杨浦区</option>
+                        <option value="8">闵行区</option>
+                        <option value="9">宝山区</option>
+                        <option value="10">嘉定区</option>
+                        <option value="11">浦东区</option>
+                        <option value="12">金山区</option>
+                        <option value="13">松江区</option>
+                        <option value="14">青浦区</option>
+                        <option value="15">奉贤区</option>
+                        <option value="16">崇明区</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><h3>请输入您的小区名称 or 地址：</h3></label>
+                    <input type="text" class="form-control" name="diskname_input" id="sel2" placeholder="请输入小区名称：化工二村 or 梅陇路130号" />
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default col-2 bg-primary text-white">确认</button>
+                    <button type="reset" class="btn btn-default col-2 bg-light text-dark">重置</button>
+                </div>
+            </form>
+
+        </div>
+
+    </div>
+</div>
+{{ error }}
+
+</body>
+</html>

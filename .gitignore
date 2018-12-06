@@ -1,5 +1,6 @@
 # Customize
 .idea
+.DS_Store
 /static/node_modules
 /evaluate/YGT/cache/
 /evaluate/YGT/data/2017-[01][0-9]/*.txt
