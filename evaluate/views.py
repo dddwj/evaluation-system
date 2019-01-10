@@ -39,5 +39,5 @@ def result(request):
     houses.append(PredictOne.init(district, address, house_type, time, all_floor, floor, acreage))
     result = str(PredictOne.predict(houses)["predict_price"][0])
 
-    return render(request, "evaluate/result.html",{'result':result})
+    return render(request, "evaluate/result.html",{'result': result[0:8]})
     pass
