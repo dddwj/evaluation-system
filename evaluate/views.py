@@ -41,3 +41,21 @@ def result(request):
 
     return render(request, "evaluate/result.html",{'result': result[0:8]})
     pass
+
+def admin(request):
+    return render(request, "evaluate/administrator.html")
+
+def trend(request):
+    return render(request, "evaluate/trend.html")
+
+def average(request):
+    return render(request, "evaluate/average.html")
+
+def chooseDisk(request):
+    # lineNumber = request.GET['line']
+    searchInput = request.GET['diskNameInput']
+    return render(request, "evaluate/chooseDisk.html", {'searchInput': searchInput })
+
+
+def diskDetail(request):
+    return render(request, "evaluate/diskDetail.html")
