@@ -7,7 +7,7 @@ from sys import path
 path.append(os.path.dirname(os.path.realpath(__file__)))
 import kernel as k
 # from . import kernel as k
-
+import database_tools as tools
 import re
 
 beginDate = k.beginDate
@@ -87,6 +87,7 @@ def find_DiskID(address):
     # 为了改进体验，希望以后可以在网页中输入地址时就判断出是否存在某个小区，而不是在预测前再返回错误信息！
     # address = address_filter(address)
     address_df = pd.read_csv(address_path, usecols=['RoadLaneNo', 'NewDiskID'])
+    # address_df = tools.read_basic_table("AD_NewDiskAddress")
     address_df.rename(columns={'RoadLaneNo': 'address'}, inplace=True)
     address_all = pd.merge(meta_df[["NewDiskID","name"]],address_df, how='left', on='NewDiskID').dropna(axis=0, how='any')
     address_fit = address_all[address_all.address.str.contains(address)]
@@ -99,6 +100,8 @@ def find_DiskID(address):
         NewDiskID = address_fit.iat[0, 0]
         return (NewDiskID, address_fit.iat[0,1],address_fit.iat[0,2])
 
+###############################################
+## 需要改写，将查找功能放到数据库，不要在本地查找。##
 def find_DiskID_ByName(diskname_input):
     address_df = pd.read_csv(address_path, usecols=['RoadLaneNo', 'NewDiskID'])
     address_df.rename(columns={'RoadLaneNo': 'address'},inplace=True)

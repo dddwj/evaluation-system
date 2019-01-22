@@ -10,6 +10,7 @@ import pandas as pd
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder
 from tqdm import tqdm
+import database_tools as tools
 
 # 新房数据表路径
 newdisk_path = os.path.dirname(os.path.realpath(__file__))+'/data/AD_NewDisk.csv'
@@ -30,7 +31,7 @@ result_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_result.c
 # 训练集起始月份
 beginDate = '2018-01'
 # 训练集终止月份
-endDate = '2018-04'
+endDate = '2018-02'
 # 房源中位数价格路径
 medprice_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_medprice.csv' % (month, month)
 # 区名特征化路径
@@ -44,6 +45,7 @@ modulelabel_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_mod
 
 def load_guapai(name, month):
     """读取挂牌数据"""
+    # 训练模型，使用本地数据，提高效率。
     with open(os.path.join(data_path, name, '挂牌.txt'),encoding='utf-8') as f:
         l = []
         for i in f.readlines():
@@ -85,6 +87,7 @@ def load_data():
 
         # 获取经纬度信息
         newdisk_df = pd.read_csv(newdisk_path, usecols=['NewDiskID', 'PropertyID', 'NewDiskName', 'Coordinates'])
+            # newdisk_df = tools.read_basic_table('AD_NewDisk') 训练模型，使用本地数据，不再读取数据库。
         newdisk_df.rename(columns={'NewDiskName': 'name'}, inplace=True)
 
         # 获取板块、环线信息

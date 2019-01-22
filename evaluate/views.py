@@ -14,7 +14,7 @@ def searchlandmark(request):
 
 def getDisk(request):
     area = request.GET['area']
-    diskname_input = request.GET['diskname_input']
+    diskname_input = request.GET['diskNameInput']
     (diskid, name, address) = PredictOne.find_DiskID_ByName(diskname_input)
     if diskid != None and name != None and address != None:
         return render(request, "evaluate/searchinput.html", {'diskname': name ,'address': address})
