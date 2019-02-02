@@ -1,3 +1,10 @@
+cache
+data
+
+
+# dwj
+/evaluate/YGT/database_tools.py
+
 # Customize
 .idea
 .DS_Store
@@ -6,6 +13,7 @@
 /evaluate/YGT/data/2018-[01][0-9]/*.txt
 /evaluate/YGT/data/测试月.xlsx
 /evaluate/YGT/*_model/*_result.csv
+/evaluate/YGT/5_model
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
