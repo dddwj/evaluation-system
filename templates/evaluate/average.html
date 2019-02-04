@@ -1,12 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
     <title>区域均价</title>
+    <script src="../../static/node_modules/jquery/dist/jquery.js"></script>
 </head>
 <body>
 地图
 <br>
 小区当月均价、本季度均价、本年均价；板块均价、行政区均价
+<form id="queryDiskForm">
+    <div>
+        <div>小区名称：</div>
+        <label>
+            <input type="text" name="diskName">
+        </label>
+        <div>月份:</div>
+        <input type="text" name="month">
+        <br>
+        <input type="button" id="doQueryDiskBtn" value="查询均价">
+    </div>
+</form>
+<script type="text/javascript">
+    $("#doQueryDiskBtn").click(function () {
+        $.ajax({
+            type: "GET",
+            url: "api/average/diskName",
+            data: $('#queryDiskForm').serialize(),
+            dataType: "json",
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                if (data.data === "no match")
+                    alert("无匹配小区！");
+                else if (data.data === "month out of range")
+                    alert("月份超出数据库范围！");
+                else {
+                    console.log(data);
+                    var disk_year_avg_list = data.data;
+                    console.log(data.data);
+                    alert(JSON.stringify(disk_year_avg_list));
+                    // set option
+                }
+            }
+        });
+    });
+</script>
+<hr>
+<form id="queryPlateForm">
+    <select id="areaSelectF" onchange="areaChange()">
+        <option selected="selected"></option>
+        <option>黄浦</option>
+        <option>徐汇</option>
+        <option>长宁</option>
+        <option>静安</option>
+        <option>浦东</option>
+        <option>杨浦</option>
+        <option>普陀</option>
+        <option>虹口</option>
+        <option>闸北</option>
+        <option>闵行</option>
+        <option>嘉定</option>
+        <option>松江</option>
+        <option>宝山</option>
+        <option>崇明</option>
+        <option>青浦</option>
+        <option>金山</option>
+        <option>奉贤</option>
+    </select>
+    <br>
+    <select id="plateSelectF">
+    </select>
+    <br>
+    <input type="text" id="monthQueryPlateF" value="201901" readonly>
+    <br>
+    <input type="button" id="doQueryPlateBtn" value="查询均价">
+</form>
+<script type="text/javascript">
+    function areaChange() {
+        $.ajax({
+            type: "GET",
+            url: "api/base/plate",
+            data: {
+                area: $('#areaSelectF').val(),
+            },
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                var plates = data.data;
+                $('#plateSelectF').html("");
+                for(var i = 0 ; i < plates.length; i++){
+                    $('#plateSelectF').append("<option>" + plates[i] +"</option>");
+                }
+            }
+        });
+    }
+
+    $('#doQueryPlateBtn').click(function () {
+        $.ajax({
+            type: "GET",
+            url: "api/average/plate",
+            data: {
+                plate: $('#plateSelectF').val(),
+                month: $("#monthQueryPlateF").val()
+            },
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                var plate_month_avg_list = data.data;
+                alert(JSON.stringify(plate_month_avg_list))
+            }
+        })
+    })
+</script>
+
 </body>
 </html>

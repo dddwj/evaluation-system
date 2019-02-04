@@ -30,6 +30,8 @@ urlpatterns = [
     url('^administrator',views.admin),
     url('^trend.html',views.trend),
     url('^average.html',views.average),
+    url('^api/average/', views.averageQuery),
+    url('^api/base/', views.baseQuery),
     url('^chooseDisk.html',views.chooseDisk),
     url('^diskDetail.html', views.diskDetail)
 
