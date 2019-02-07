@@ -125,24 +125,25 @@
 <form id="queryPlateForm">
     <select id="areaSelectF" onchange="areaChange()">
         <option selected="selected"></option>
-        <option>黄浦</option>
-        <option>徐汇</option>
-        <option>长宁</option>
-        <option>静安</option>
-        <option>浦东</option>
-        <option>杨浦</option>
-        <option>普陀</option>
-        <option>虹口</option>
-        <option>闸北</option>
-        <option>闵行</option>
-        <option>嘉定</option>
-        <option>松江</option>
-        <option>宝山</option>
-        <option>崇明</option>
-        <option>青浦</option>
-        <option>金山</option>
-        <option>奉贤</option>
+        <option>黄浦区</option>
+        <option>徐汇区</option>
+        <option>长宁区</option>
+        <option>静安区</option>
+        <option>浦东新区</option>
+        <option>杨浦区</option>
+        <option>普陀区</option>
+        <option>虹口区</option>
+        <option>闸北区</option>
+        <option>闵行区</option>
+        <option>嘉定区</option>
+        <option>松江区</option>
+        <option>宝山区</option>
+        <option>崇明区</option>
+        <option>青浦区</option>
+        <option>金山区</option>
+        <option>奉贤区</option>
     </select>
+    <input type="button" id="drawPlateBtn" value="显示该区">
     <br>
     <select id="plateSelectF">
     </select>
@@ -157,7 +158,7 @@
             type: "GET",
             url: "api/base/plate",
             data: {
-                area: $('#areaSelectF').val(),
+                area: $('#areaSelectF').val().split("区")[0],
             },
             dataType: 'json',
             async: false,
@@ -217,13 +218,16 @@
     }
 
     var map;
-    var points = [];
-    var markers = [];
-    var diskNames = [];
-    var prices = [];
-    var plates = [];
+    var points = [];    // 小区坐标点集合
+    var markers = [];   // 小区标记点集合
+    var cluster;        // 聚集点集合
+    var markers_show = true; // 小区标记点是否显示
+    var diskNames = []; // 小区名称集合
+    var prices = [];    // 小区价格集合
+    var plates = [];    // 小区所属板块集合
+    var polygons = [];  // 地图上描出的多边形集合
 
-
+    // 暂时没有用到。用来改变聚集点的样式。
     var changeStyle = function (context) {
         var count = points.length;
         var factor = Math.pow(context.count / count, 1 / 18);
@@ -247,11 +251,6 @@
         //  context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
         context.marker.setContent(div)
     };
-
-    var changeStyle2 = function (context) {
-
-    };
-
 
     function getData() {
         points = [];
@@ -284,7 +283,8 @@
                 for (var i = 0; i < points.length; i++) {
                     // 在地图上标出点（aka. 覆盖物）
                     var marker = new AMap.Marker({
-                        position: points[i]
+                        position: points[i],
+                        extData: i
                     });
 
                     // 指定所标出覆盖物的样式与文字内容
@@ -299,8 +299,9 @@
                     var Hue = 180 - factor * 180;
                     div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
                     div.style.color = "#000000";
-                    div.innerHTML = "<p>" + price + "元</p> <p>" + diskName + "</p>" + "<p id='index' hidden>"+ index + "</p>";
-                        // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。不知道有没有更好的办法传值。
+                    div.innerHTML = "<p>" + price + "元/㎡</p> <p>" + diskName + "</p>" + "<p id='index' hidden>"+ index + "</p>";
+                        // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。
+                        // 也可以用marker的extData属性来存放。
                     marker.setContent(div);
 
 
@@ -317,7 +318,7 @@
                         var title = diskName;
                         var content = [];
                         content.push("<img src='http://tpc.googlesyndication.com/simgad/5843493769827749134'>所属板块：" + plate);
-                        content.push("<span style=font-size:14px;color:#F00;>均价: " + price + "元</span>");
+                        content.push("<span style=font-size:14px;color:#F00;>均价: " + price + "元/㎡</span>");
                         content.push("<a href='https://ditu.amap.com/detail/B000A8URXB?citycode=110105'>详细信息</a>");
 
                         infoWindow = new AMap.InfoWindow({
@@ -337,7 +338,7 @@
                 map.plugin(["AMap.MarkerClusterer"], function () {
                     cluster = new AMap.MarkerClusterer(map, markers, {
                         gridSize: 40,
-                        renderCircleMarker: changeStyle2,
+                       // renderCircleMarker: changeStyle,
                         zoomOnClick: true
                     });
                 });
@@ -394,11 +395,14 @@
     function drawMap() {
         // 画基础地图
         map = new AMap.Map('container', {
-            zoom: 11,
+            zoom: 13,
             viewMode: '2D',
             lang: 'cn',
+            minClusterSize: 5,
+            maxZoom: 15,
             features: ['bg', 'road', 'building'],     // 去掉了地图上的标注(point)，美观一点。
-            mapStyle: "amap://styles/light"
+            mapStyle: "amap://styles/light",
+            resizeEnable: true
         });
 
         // 画地图缩放工具栏 和 比例尺
@@ -420,18 +424,102 @@
             new AMap.LngLat(122.058353, 31.74872)
         ));
 
-        // 从服务器取数据并绘图
+        // 从服务器取数据并绘图(小区层面)
         getData();
+
+        // 画"上海市"的覆盖物       暂时还没有"上海两个字"，以后考虑用ps做一个好看的icon。
+        var marker_shanghai = new AMap.Circle({
+            center: [121.491893,31.200785],
+            radius: 8000,
+            strokeColor:'white',
+            strokeWeight:2,
+            strokeOpacity:0.5,
+            fillColor:'rgba(0,0,255,1)',
+            fillOpacity:0.7
+        });
+ //       marker_shanghai.on('click', function () {
+ //           alert("zooming!");
+ //           map.setZoom(10);
+ //       });
+        marker_shanghai.setMap(map);
+
+        // 根据缩放比例显示隐藏marker
+        map.on('zoomend',function () {
+            var zoom = map.getZoom();
+            console.log(zoom);
+            if (zoom > 14 && !markers_show){        // 展示小区均价
+                markers.forEach(function (marker) {
+                    marker.show();
+                });
+                cluster.setMarkers(markers);
+                markers_show = true;
+            }
+            if (zoom <= 13 && markers_show){        // 隐藏小区均价
+                markers.forEach(function (marker) {
+                    marker.hide();
+                });
+                cluster.clearMarkers();
+                markers_show = false;
+            }
+
+
+
+            if (zoom <= 9){     // 展示"上海"marker
+                marker_shanghai.show();
+            }else{              // 隐藏"上海"marker
+                marker_shanghai.hide();
+            }
+        });
     }
 
     // 网页加载完成后绘图
     window.init = function () {
         drawMap();
+        drawBound('city', '上海');
     };
     // 点击按钮，获取指定月份的数据，再绘图
-    $("#queryMapForm").click(function () {
-        drawMap();
-    })
+//    $("#queryMapForm").click(function () {
+//        drawMap();
+//        drawBound('city', '上海')
+//    });
+</script>
+<script>
+// ********************************************
+
+    $("#drawPlateBtn").click(function () {
+        drawBound('district', $('#areaSelectF').val());
+    });
+
+    function drawBound(level, name) {
+        map.remove(polygons);
+        map.plugin(['AMap.DistrictSearch'], function () {
+            var district = new AMap.DistrictSearch({
+                extensions: 'all',
+                level: level
+            });
+            district.search(name, function (status, result) {
+                var bounds = result.districtList[0].boundaries;
+                polygons = [];
+                if (bounds) {
+                    for (var i = 0, l = bounds.length; i < l; i++) {
+                        //生成行政区划polygon
+                        var polygon = new AMap.Polygon({
+                            map: map,
+                            strokeWeight: 1,
+                            path: bounds[i],
+                            fillOpacity: 0.3,
+                            fillColor: '#CCF3FF',
+                            strokeColor: '#CC66CC'
+                        });
+                        polygons.push(polygon)
+                    }
+                    // 地图自适应
+                    map.setFitView()
+                }
+
+            })
+        })
+    }
 </script>
 <script type="text/javascript"
         src="https://webapi.amap.com/maps?v=1.4.12&key=d2c86de9994f80ca57ae2ea5065aae27&callback=init"></script>
