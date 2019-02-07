@@ -13,10 +13,10 @@
     <div>
         <div>小区名称：</div>
         <label>
-            <input type="text" name="diskName">
+            <input type="text" name="diskName" value="华理苑">
         </label>
         <div>月份:</div>
-        <input type="text" name="month">
+        <input type="text" name="month" value="2017-01">
         <br>
         <input type="button" id="doQueryDiskBtn" value="查询均价">
     </div>
@@ -94,8 +94,8 @@
             success: function (data) {
                 var plates = data.data;
                 $('#plateSelectF').html("");
-                for(var i = 0 ; i < plates.length; i++){
-                    $('#plateSelectF').append("<option>" + plates[i] +"</option>");
+                for (var i = 0; i < plates.length; i++) {
+                    $('#plateSelectF').append("<option>" + plates[i] + "</option>");
                 }
             }
         });
@@ -121,6 +121,139 @@
         })
     })
 </script>
+<hr>
+<form id="queryMapForm">
+    <input type="text" name="month" value="201901">
+    <input type="button" id="doQueryMapBtn" value="获取该月所有小区的均价">
+</form>
+<hr>
+<div id="container" style="width: 900px; height: 900px; "></div>
 
+<script type="text/javascript">
+    function bMapTransAMap(lng, lat) {      // ref: https://blog.csdn.net/weixin_39015132/article/details/82958562
+        let x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+        let x = lng - 0.0065;
+        let y = lat - 0.006;
+        let z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+        let theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+        let lngs = z * Math.cos(theta);
+        let lats = z * Math.sin(theta);
+        return [lngs, lats];
+        // return {lng: lngs,lat: lats};   
+    }
+
+    var map;
+    var points = [];
+    var markers = [];
+    var diskNames = [];
+    var prices = [];
+    var count = markers.length;
+
+
+    var changeStyle = function (context) {
+        var factor = Math.pow(context.count / count, 1 / 18);
+        var div = document.createElement('div');
+        var Hue = 180 - factor * 180;
+        var bgColor = 'hsla(' + Hue + ',100%,50%,0.7)';
+        var fontColor = 'hsla(' + Hue + ',100%,20%,1)';
+        var borderColor = 'hsla(' + Hue + ',100%,40%,1)';
+        var shadowColor = 'hsla(' + Hue + ',100%,50%,1)';
+        div.style.backgroundColor = bgColor;
+        var size = Math.round(30 + Math.pow(context.count / count, 1 / 5) * 20);
+        div.style.width = div.style.height = size + 'px';
+        // div.style.border = 'solid 1px ' + borderColor;
+        // div.style.borderRadius = size / 2 + 'px';
+        // div.style.boxShadow = '0 0 1px ' + shadowColor;
+        div.innerHTML = context.count;
+        div.style.lineHeight = size + 'px';
+        div.style.color = fontColor;
+        div.style.fontSize = '14px';
+        div.style.textAlign = 'center';
+        //  context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
+        context.marker.setContent(div)
+    };
+
+    var changeStyle2 = function (context) {
+
+    };
+
+
+    function getData() {
+        points = [];
+        markers = [];
+        diskNames = [];
+        prices = [];
+        $.ajax({
+            type: "GET",
+            url: "api/average/allDisk",
+            data: $("#queryMapForm").serialize(),
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+                console.log(request);
+            },
+            success: function (data) {
+                var allDisks = data.data;
+                allDisks.forEach(function (disk) {
+                    console.log(disk);
+                    let coords = disk[3].split(',');
+                    points.push(bMapTransAMap(coords[0], coords[1]));
+                    diskNames.push(disk[0]);
+                    prices.push(disk[2]);
+                });
+                for (var i = 0; i < points.length; i++) {
+                    var marker = new AMap.Marker({
+                        position: points[i]
+                    });
+                    var div = document.createElement('div');
+                    div.style = "width: 150px; height: 65px; " +
+                        "border-radius: 24px;" +
+                        "text-align: center;" +
+                        "fontSize: 8px;";
+                    count = markers.length;
+                    var factor = Math.pow(Number(prices[i]) / 150000, 0.7);
+                    console.log(factor);
+                    var Hue = 180 - factor * 180;
+                    div.style.backgroundColor = 'hsla(' + Hue + ',70%,50%,0.5)';
+                    div.style.color = "#000000";
+
+                    div.innerHTML = "<h4>" + diskNames[i] + "</h4> <h5> " + Math.round(prices[i])+ " 元</h5>";
+
+                    marker.setContent(div);
+                    markers.push(marker);
+                }
+                map.plugin(["AMap.MarkerClusterer"], function () {
+                    cluster = new AMap.MarkerClusterer(map, markers, {
+                        gridSize: 40,
+                        renderCircleMarker: changeStyle2,
+                        zoomOnClick: true
+                    });
+                });
+
+            }
+        });
+    }
+
+    function drawMap() {
+        map = new AMap.Map('container', {
+            zoom: 11,
+            viewMode: '2D',
+            lang: 'cn'
+        });
+        getData();
+    }
+
+    window.init = function () {
+        drawMap();
+    };
+
+
+    $("#queryMapForm").click(function () {
+        drawMap();
+    })
+</script>
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.12&key=d2c86de9994f80ca57ae2ea5065aae27&callback=init"></script>
 </body>
 </html>
