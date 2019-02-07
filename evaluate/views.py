@@ -102,7 +102,7 @@ def averageQuery(request):
         else:
             return JsonResponse({'status': "params not fully specified"})
 
-    elif queryAttribute == 'allDisk':
+    elif queryAttribute == 'allDisks':
         params = request.GET.keys()
         if params.__contains__('month'):
             month = str(request.GET['month'])
@@ -113,6 +113,22 @@ def averageQuery(request):
                 cursor.callproc('avg_allDisk_month', args=(month,))        # 存储过程运行完成，数据没有commit，当前conn会话仍持有锁，因此insert没有在数据库中永久生效，所以在navicat中不可见新的数据。
                 data = cursor.fetchall()
                 conn.commit()   # 必须写commit，用来释放锁，否则insert不会在数据库中最终生效。
+            except pymysql.err.ProgrammingError:
+                return JsonResponse({'status': 'ok', 'data': 'sql error'})
+            return JsonResponse({'status': 'ok', 'month': month, 'data': data})
+        else:
+            return JsonResponse({'status': "params not fully specified"})
+    elif queryAttribute == 'allDistricts':
+        params = request.GET.keys()
+        if params.__contains__('month'):
+            month = str(request.GET['month'])
+            if not tableExists(month):
+                return JsonResponse({'status': 'ok', 'month': month, 'data': 'month out of range'})
+            cursor = conn.cursor()
+            try:
+                sql = "select avg(monthAveragePrice), district, jingwei from `" + month + "_average` group by district;"
+                cursor.execute(sql)
+                data = cursor.fetchall()
             except pymysql.err.ProgrammingError:
                 return JsonResponse({'status': 'ok', 'data': 'sql error'})
             return JsonResponse({'status': 'ok', 'month': month, 'data': data})
