@@ -4,6 +4,79 @@
     <meta charset="UTF-8">
     <title>区域均价</title>
     <script src="../../static/node_modules/jquery/dist/jquery.js"></script>
+    <style>
+                .content-window-card {
+            position: relative;
+            box-shadow: none;
+            bottom: 0;
+            left: 0;
+            width: auto;
+            padding: 0;
+        }
+
+        .content-window-card p {
+            height: 2rem;
+        }
+
+        .custom-info {
+            border: solid 1px silver;
+        }
+
+        div.info-top {
+            position: relative;
+            background: none repeat scroll 0 0 #F9F9F9;
+            border-bottom: 1px solid #CCC;
+            border-radius: 5px 5px 0 0;
+        }
+
+        div.info-top div {
+            display: inline-block;
+            color: #333333;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 31px;
+            padding: 0 10px;
+        }
+
+        div.info-top img {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition-duration: 0.25s;
+        }
+
+        div.info-top img:hover {
+            box-shadow: 0px 0px 5px #000;
+        }
+
+        div.info-middle {
+            font-size: 12px;
+            padding: 10px 6px;
+            line-height: 20px;
+        }
+
+        div.info-bottom {
+            height: 0px;
+            width: 100%;
+            clear: both;
+            text-align: center;
+        }
+
+        div.info-bottom img {
+            position: relative;
+            z-index: 104;
+        }
+
+        span {
+            margin-left: 5px;
+            font-size: 11px;
+        }
+
+        .info-middle img {
+            float: left;
+            margin-right: 6px;
+        }
+    </style>
 </head>
 <body>
 地图
@@ -129,6 +202,7 @@
 <hr>
 <div id="container" style="width: 900px; height: 900px; "></div>
 
+
 <script type="text/javascript">
     function bMapTransAMap(lng, lat) {      // ref: https://blog.csdn.net/weixin_39015132/article/details/82958562
         let x_pi = 3.14159265358979324 * 3000.0 / 180.0;
@@ -147,10 +221,11 @@
     var markers = [];
     var diskNames = [];
     var prices = [];
-    var count = markers.length;
+    var plates = [];
 
 
     var changeStyle = function (context) {
+        var count = points.length;
         var factor = Math.pow(context.count / count, 1 / 18);
         var div = document.createElement('div');
         var Hue = 180 - factor * 180;
@@ -183,6 +258,7 @@
         markers = [];
         diskNames = [];
         prices = [];
+        plates = [];
         $.ajax({
             type: "GET",
             url: "api/average/allDisk",
@@ -194,35 +270,70 @@
                 console.log(request);
             },
             success: function (data) {
+                // 整理服务器传来的数据，供后面画地图用
                 var allDisks = data.data;
                 allDisks.forEach(function (disk) {
-                    console.log(disk);
                     let coords = disk[3].split(',');
                     points.push(bMapTransAMap(coords[0], coords[1]));
                     diskNames.push(disk[0]);
                     prices.push(disk[2]);
+                    plates.push(disk[1]);
                 });
+
+                // 对每一个点规定样式
                 for (var i = 0; i < points.length; i++) {
+                    // 在地图上标出点（aka. 覆盖物）
                     var marker = new AMap.Marker({
                         position: points[i]
                     });
+
+                    // 指定所标出覆盖物的样式与文字内容
+                    var index = i;
+                    var diskName = diskNames[i];
+                    var price = Math.round(prices[i]);
                     var div = document.createElement('div');
-                    div.style = "width: 150px; height: 65px; " +
+                    div.style = "width: 100px; height: 65px; " +
                         "border-radius: 24px;" +
-                        "text-align: center;" +
-                        "fontSize: 8px;";
-                    count = markers.length;
-                    var factor = Math.pow(Number(prices[i]) / 150000, 0.7);
-                    console.log(factor);
+                        "text-align: center;";
+                    var factor = Math.pow(Number(prices[i]) / 150000, 0.4);
                     var Hue = 180 - factor * 180;
-                    div.style.backgroundColor = 'hsla(' + Hue + ',70%,50%,0.5)';
+                    div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
                     div.style.color = "#000000";
-
-                    div.innerHTML = "<h4>" + diskNames[i] + "</h4> <h5> " + Math.round(prices[i])+ " 元</h5>";
-
+                    div.innerHTML = "<p>" + price + "元</p> <p>" + diskName + "</p>" + "<p id='index' hidden>"+ index + "</p>";
+                        // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。不知道有没有更好的办法传值。
                     marker.setContent(div);
+
+
+                    // 指定点击覆盖物时弹出的提示窗体
+                    marker.on('click', function (context) {
+                        // 获取覆盖物的索引，从而获取plate, price, diskName。达到传值的效果
+                        var div = this.getContent();
+                        var index = div.childNodes[3].innerText;
+                        var diskName = diskNames[index];
+                        var price = Math.round(prices[index]);
+                        var plate = plates[index];
+
+                        // 开始绘制提示窗体
+                        var title = diskName;
+                        var content = [];
+                        content.push("<img src='http://tpc.googlesyndication.com/simgad/5843493769827749134'>所属板块：" + plate);
+                        content.push("<span style=font-size:14px;color:#F00;>均价: " + price + "元</span>");
+                        content.push("<a href='https://ditu.amap.com/detail/B000A8URXB?citycode=110105'>详细信息</a>");
+
+                        infoWindow = new AMap.InfoWindow({
+                            isCustom: true,
+                            offset: new AMap.Pixel(60, -35),
+                            content: createInfoWindow(title, content.join("<br/>")) // 使用创建窗体的函数
+                        });
+                        infoWindow.open(map, context.target.getPosition());
+                    });
+
+
+                    // 最后将渲染完的这个覆盖物放入集合中
                     markers.push(marker);
                 }
+
+                // 添加聚集点的功能
                 map.plugin(["AMap.MarkerClusterer"], function () {
                     cluster = new AMap.MarkerClusterer(map, markers, {
                         gridSize: 40,
@@ -235,20 +346,89 @@
         });
     }
 
+    // 创建信息窗体
+    function createInfoWindow(title, content) {
+        var info = document.createElement("div");
+        info.className = "custom-info input-card content-window-card";
+        //可以通过下面的方式修改自定义窗体的宽高
+        //info.style.width = "400px";
+        // 定义顶部标题
+        var top = document.createElement("div");
+        var titleD = document.createElement("div");
+        var closeX = document.createElement("img");
+        top.className = "info-top";
+        titleD.innerHTML = title;
+        closeX.src = "https://webapi.amap.com/images/close2.gif";
+        closeX.onclick = closeInfoWindow;
+
+        top.appendChild(titleD);
+        top.appendChild(closeX);
+        info.appendChild(top);
+
+        // 定义中部内容
+        var middle = document.createElement("div");
+        middle.className = "info-middle";
+        middle.style.backgroundColor = 'white';
+        middle.innerHTML = content;
+        info.appendChild(middle);
+
+        // 定义底部内容
+        var bottom = document.createElement("div");
+        bottom.className = "info-bottom";
+        bottom.style.position = 'relative';
+        bottom.style.top = '0px';
+        bottom.style.margin = '0 auto';
+        var sharp = document.createElement("img");
+        sharp.src = "https://webapi.amap.com/images/sharp.png";
+        bottom.appendChild(sharp);
+        info.appendChild(bottom);
+        return info;
+    }
+
+    // 关闭信息窗体
+    function closeInfoWindow() {
+        map.clearInfoWindow();
+    }
+
+
     function drawMap() {
+        // 画基础地图
         map = new AMap.Map('container', {
             zoom: 11,
             viewMode: '2D',
-            lang: 'cn'
+            lang: 'cn',
+            features: ['bg', 'road', 'building'],     // 去掉了地图上的标注(point)，美观一点。
+            mapStyle: "amap://styles/light"
         });
+
+        // 画地图缩放工具栏 和 比例尺
+        AMap.plugin([
+            'AMap.ToolBar',
+            'AMap.Scale'
+        ], function () {
+            map.addControl(new AMap.Scale({
+                visible: true
+            }));
+            map.addControl(new AMap.ToolBar({
+                visible: true
+            }));
+        });
+
+        // 地图仅限展示上海及上海周边
+        map.setLimitBounds(new AMap.Bounds(
+            new AMap.LngLat(121.039371, 30.613802),
+            new AMap.LngLat(122.058353, 31.74872)
+        ));
+
+        // 从服务器取数据并绘图
         getData();
     }
 
+    // 网页加载完成后绘图
     window.init = function () {
         drawMap();
     };
-
-
+    // 点击按钮，获取指定月份的数据，再绘图
     $("#queryMapForm").click(function () {
         drawMap();
     })
