@@ -134,6 +134,22 @@ def averageQuery(request):
             return JsonResponse({'status': 'ok', 'month': month, 'data': data})
         else:
             return JsonResponse({'status': "params not fully specified"})
+    elif queryAttribute == 'allPlates':
+        params = request.GET.keys()
+        if params.__contains__('month'):
+            month = str(request.GET['month'])
+            if not tableExists(month):
+                return JsonResponse({'status': 'ok', 'month': month, 'data': 'month out of range'})
+            cursor = conn.cursor()
+            try:
+                sql = "select avg(monthAveragePrice), plate, jingwei from `" + month + "_average` group by plate;"
+                cursor.execute(sql)
+                data = cursor.fetchall()
+            except pymysql.err.ProgrammingError:
+                return JsonResponse({'status': 'ok', 'data': 'sql error'})
+            return JsonResponse({'status': 'ok', 'month': month, 'data': data})
+        else:
+            return JsonResponse({'status': "params not fully specified"})
     else:
         return JsonResponse({'status': "invalid api access"})
 

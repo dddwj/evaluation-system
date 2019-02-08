@@ -182,7 +182,7 @@
 </script>
 
 
-<div id="container" style="width: 900px; height: 900px; "></div>
+<div id="container" style="width: 1200px; height: 900px; "></div>
 
 <script type="text/javascript">
     function bMapTransAMap(lng, lat) {      // ref: https://blog.csdn.net/weixin_39015132/article/details/82958562
@@ -409,8 +409,57 @@
         });
     }
 
-    function getPlateData() {
+    function getPlateData() {   // 与getDistrictData()函数相同流程
+        $.ajax({
+            type: "GET",
+            url: "api/average/allPlates",
+            data: { month: $("#doQueryMonth").val()},
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+                console.log(request);
+            },
+            success: function (data) {
+                var allPlates = data.data;
+                allPlates.forEach(function (plate) {
+                    let coords = plate[2].split(',');
+                    platePoints.push(bMapTransAMap(coords[0], coords[1]));
+                    plateNames.push(plate[1]);
+                    platePrices.push(plate[0]);
+                });
+                for(var i = 0; i < platePoints.length; i++){
+                    var marker = new AMap.Marker({
+                        map: map,
+                        position: platePoints[i],
+                        extData: {index: 1}
+                    });
+                    var plateName = plateNames[i];
+                    var price = Math.round(platePrices[i]);
+                    var div = document.createElement('div');
+                    div.style = "width: 100px; height: 65px; " +
+                        "border-radius: 24px;" +
+                        "text-align: center;";
+                    var factor = Math.pow(Number(platePrices[i]) / 130000, 0.5);
+                    var Hue = 180 - factor * 180;
+                    div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
+                    div.style.color = "#000000";
+                    div.innerHTML = "<p>" + price + "元/㎡</p> <p>" + plateName + "板块</p>";
+                    // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。
+                    // 也可以用marker的extData属性来存放。
+                    marker.setContent(div);
+                    marker.on('click', function () {
+                        map.setZoom(15);
+                        console.log(platePoints[this.getExtData()['index']]);
+                        console.log(this.getPosition());
+                        map.setCenter(this.getPosition());
+                    });
 
+                    plateMarkers.push(marker);
+                }
+            }
+
+        })
     }
 
     function getOverallData() {
@@ -506,6 +555,8 @@
         getData();
         // 从服务器取数据并绘图(区县层面)
         getDistrictData();
+        // 从服务器去数据并绘图(板块层面)
+        getPlateData();
 
         // 画一个总的"上海"覆盖点。考虑用ps做一个好看的标记。
         getOverallData();
@@ -523,10 +574,14 @@
             cluster.clearMarkers();
         }
         function plate_on() {
-
+            plateMarkers.forEach(function (marker) {
+                marker.show();
+            });
         }
         function plate_off() {
-
+            plateMarkers.forEach(function (marker) {
+                marker.hide();
+            });
         }
         function district_on() {
             districtMarkers.forEach(function (marker) {
