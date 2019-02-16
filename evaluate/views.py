@@ -42,8 +42,28 @@ def result(request):
     return render(request, "evaluate/result.html",{'result': result[0:8]})
     pass
 
+def adminPage(request):
+    return render(request, "evaluate/admin_login.html")
+
+def modelPage(request):
+    return render(request, "evaluate/admin_model.html")
+
+def spiderPage(request):
+    return render(request, "evaluate/admin_spider.html")
+
 def admin(request):
-    return render(request, "evaluate/administrator.html")
+    from django.utils.datastructures import MultiValueDictKeyError
+    try:
+        adminName = request.GET['adminName']
+        adminPwd = request.GET['password']
+        if adminName == 'root' and adminPwd == 'root':
+            return render(request, "evaluate/admin.html",  locals())
+        else:
+            return render(request, "evaluate/admin_login.html", {'error_msg': '用户名密码错误'})
+    except MultiValueDictKeyError:
+        return render(request, "evaluate/admin_login.html")
+
+
 
 def trend(request):
     return render(request, "evaluate/trend.html")
@@ -195,3 +215,11 @@ def chooseDisk(request):
 
 def diskDetail(request):
     return render(request, "evaluate/diskDetail.html")
+
+def modelControl(request):
+    startMonth = request.GET['startMonth']
+    endMonth = request.GET['endMonth']
+    print(startMonth, endMonth)
+    from .YGT import kernel
+    kernel.run(startMonth, endMonth)
+    return JsonResponse({'status': 'ok'})
