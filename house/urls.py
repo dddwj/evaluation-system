@@ -27,14 +27,13 @@ urlpatterns = [
     url('^searchinput', views.getDisk),
     url('^evaluate',views.evaluate),
     url('^result',views.result),
-    url('^administrator',views.admin),
+    #url('^administrator',views.admin),
     url('^trend.html',views.trend),
     url('^average.html',views.average),
     url('^api/average/', views.averageQuery),
     url('^api/base/', views.baseQuery),
     url('^chooseDisk.html',views.chooseDisk),
-    url('^diskDetail.html', views.diskDetail)
-
-
+    url('^diskDetail.html', views.diskDetail),
+    url('^api/getAvg',views.getAvg)
 
 ]
