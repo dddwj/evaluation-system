@@ -2,14 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>房价走势</title>
+    <title>trend</title>
+    {% load static %}
+    <link rel="stylesheet" href="/static/css/style.css">
+
 </head>
 <body>
-<ul>
-    <li>小区走势</li>
-    <li>板块走势</li>
-    <li>区域走势</li>
-    <li>上海市走势</li>
-</ul>
+<div id="main">
+    <div class="query-input">
+        <div>
+            <label for="name" >输入你要查询区域的名字</label>
+            <input type="text" id="name" v-model="query_name"><br/>
+        </div>
+
+        <div class="choose-type">
+            <label>选择类型</label>
+            <input type="radio" v-model="query_type" id="shanghai" value="all"/>
+            <label for="shanghai">上海市</label>
+            <input type="radio" v-model="query_type" id="area" value="area"/>
+            <label for="area">区</label>
+            <input type="radio" v-model="query_type" id="plate" value="plate"/>
+            <label for="plate">板块</label>
+            <input type="radio" v-model="query_type" id="disk" value="diskName"/>
+            <label for="plate">小区</label>
+        </div>
+        <button @click="queryTrend">查询</button>
+        <div class="query-result" id="query-result" v-show="seen">
+            123
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script src="/static/js/echarts.js"></script>
+<script src="/static/js/vue.js"></script>
+<script src="/static/js/vue-resource@1.5.js"></script>
+<script>
+
+    var vm=new Vue({
+        el:"#main",
+        data:{
+            name:'',
+            seen:true,
+            query_name:'',
+            query_type:'',
+            myChart : null,
+            option:null,
+            line_data:[]
+        },
+        methods:{
+            queryTrend:function () {
+                this.$http.get('api/getAvg?name='+this.query_name+"&type="+this.query_type).then(function(msg){
+                    var ret=msg.body
+                    if(ret.status!="ok"){
+                        alert("查询失败！");
+                        return;
+                    }
+                    var result=ret.result
+
+
+                    console.log(ret.avg);
+                    console.log(ret.months);
+
+                    var y_min=999999;
+                    for(let i in result.avg){
+                        if(result.avg[i]<y_min*0.95)
+                            y_min=result.avg[i]*0.95;
+                    }
+                    y_min-=y_min%1000
+
+                    this.option = {
+                        xAxis: {
+                            type: 'category',
+                            data: result.months
+                        },
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+
+                        legend:{
+                            data:['房价']
+                        },
+                        yAxis: {
+                            type: 'value',
+                            min:y_min
+                        },
+                        series: [{
+                            name:'房价',
+                            data: result.avg,
+                            type: 'line',
+                        }]
+                    };
+
+                this.myChart.setOption(this.option);
+                this.seen=true;
+
+                })
+                //console.log(res)
+
+                {#console.log(this.query_name);#}
+                {#console.log(this.query_type);#}
+                //this.line_data=[1,2,3,4,3,6,5,3,7,3,6]
+
+
+
+            }
+        },
+        mounted:function () {
+            //初始化
+            this.seen=false;
+            this.myChart=echarts.init(document.getElementById('query-result'));
+
+        }
+
+    })
+</script>
 </body>
 </html>
