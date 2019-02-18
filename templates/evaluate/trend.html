@@ -60,6 +60,7 @@
                     var ret=msg.body
                     if(ret.status!="ok"){
                         alert("查询失败！");
+                        console.log(ret.sql);
                         return;
                     }
                     var result=ret.result
