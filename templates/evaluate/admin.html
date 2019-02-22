@@ -14,7 +14,8 @@
             margin: 0;
             padding: 0;
         }
-        .head{
+
+        .head {
             line-height: 60px;
             width: 100%;
             background-color: #48278e;
@@ -23,45 +24,60 @@
             text-align: center;
         }
 
-        .left{
+        .left {
             width: 20%;
             min-height: 600px;
             overflow: auto;
             background-color: #b2a6a7;
         }
 
-        .left-item{
+        .left-item {
             text-align: center;
             padding: 20px 0px;
             margin: 20px 0px;
             font-size: 18px;
         }
 
-        a{
+        a {
             text-decoration: none;
         }
 
-        .left, .content{
+        .left, .content {
             float: left
         }
 
-        .content{
+        .content {
             width: 70%;
             min-height: 600px;
         }
     </style>
 </head>
 <body>
-    <div class="head">{{ adminName }} 管理员控制</div>
-    <div class="left">
-        <div class="left-item"><a href="admin_model.html">模型控制</a> </div>
-        <div class="left-item"><a href="admin_spider.html">爬虫控制</a> </div>
-        <div class="left-item"><a href="admin_house.html">管理挂牌数据</a></div>
-    </div>
-    <div class="content">
-        {% block  content%}
+<div class="head">{{ adminName }} 管理员控制</div>
+<div class="left">
+    <div class="left-item"><a href="admin_model.html">模型控制</a></div>
+    <div class="left-item"><a href="admin_spider.html">爬虫控制</a></div>
+    <div class="left-item"><a href="admin_house.html">管理挂牌数据</a></div>
+</div>
+<div class="content">
+    {% block  content %}
+        <form id="monthForm">
+        <div class="form-group">
+            <label for="startMonth" class="col-sm-2 control-label">开始月</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="startMonth" value="2017-02" placeholder="开始月份">
+            </div>
+            <label for="endMonth" class="col-sm-2 control-label">结束月</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="endMonth" value="2017-03" placeholder="结束月份">
+            </div>
+            <div hidden>
+                <label for="user">管理员名</label>
+                <input type="text" id="user" value="root">
+            </div>
+        </div>
+        </form>
+    {% endblock %}
 
-        {% endblock %}
-    </div>
 </body>
 </html>

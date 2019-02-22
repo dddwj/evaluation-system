@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import *
+from django.core import serializers
 from .YGT import PredictOne
 # Create your views here.
 
@@ -216,10 +217,50 @@ def chooseDisk(request):
 def diskDetail(request):
     return render(request, "evaluate/diskDetail.html")
 
-def modelControl(request):
-    startMonth = request.GET['startMonth']
-    endMonth = request.GET['endMonth']
-    print(startMonth, endMonth)
-    from .YGT import kernel
-    kernel.run(startMonth, endMonth)
-    return JsonResponse({'status': 'ok'})
+def modelControl(request, controlAttribute):
+    from .models import models_logs
+    print(controlAttribute)
+
+    if controlAttribute == 'startTraining':
+        # request.GET.get('test', 'test1')
+        params = request.GET.dict()
+        from datetime import datetime
+        model = models_logs()
+        model.trainer = 'root1'
+        model.startMonth = datetime.strptime(params['startMonth'], '%Y-%m')
+        model.endMonth = datetime.strptime(params['endMonth'], '%Y-%m')
+        model.trainDate = datetime.strftime(datetime.now(),'%Y-%m-%d')
+        model.comment = params['comment']
+        model.objective = params['objective']
+        model.metric = params['metric']
+        model.learning_rate = params['learning_rate']
+        model.feature_fraction = params['feature_fraction']
+        model.bagging_fraction = params['bagging_fraction']
+        model.num_leaves = params['num_leaves']
+        model.bagging_freq = params['bagging_freq']
+        model.min_data_in_leaf = params['min_data_in_leaf']
+        model.min_gain_to_split = params['min_gain_to_split']
+        model.lambda_l1 = params['lambda_l1']
+        model.lambda_l2 = params['lambda_l2']
+        model.verbose = params['verbose']
+        model.save()
+        return JsonResponse({'status': 'ok', 'model_id': model.id})
+
+    if controlAttribute == 'modelList':
+        from .models import models_logs
+        modelList = list(models_logs.objects.all().values())
+        return JsonResponse({'status': 'ok', 'modelList': modelList})
+
+    if controlAttribute == 'getCurrentModel':
+        from django.forms.models import model_to_dict
+        model = model_to_dict(models_logs.objects.get(inUseFlag=1))    # get方法仅返回一条记录，且返回的是models_logs对象，而不是QuerySet
+        return JsonResponse({'status': 'ok', 'model': model})
+
+    if controlAttribute == 'chooseModel':
+        model_id = request.GET["model_id"]
+        models_logs.objects.filter(inUseFlag=1).update(inUseFlag=0)
+        models_logs.objects.filter(id=model_id).update(inUseFlag=1)
+        return JsonResponse({'status': 'ok'})
+
+
+
