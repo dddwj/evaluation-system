@@ -22,7 +22,7 @@ class models_logs(models.Model):
     min_gain_to_split = models.IntegerField(default=0)
     lambda_l1 = models.DecimalField(default=1,decimal_places=2, max_digits=5)
     lambda_l2 = models.DecimalField(default=1,decimal_places=2, max_digits=5)
-    verbose = models.DecimalField(default=0,decimal_places=2, max_digits=5)
+    verbose = models.IntegerField(default=0)
 
     trainSuccess = models.IntegerField(verbose_name='是否成功训练/是否在本地有模型',default=0)
 

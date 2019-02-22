@@ -1,6 +1,6 @@
 cache
 data
-
+model_*/
 
 # dwj
 /evaluate/YGT/database_tools.py

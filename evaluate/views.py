@@ -244,6 +244,11 @@ def modelControl(request, controlAttribute):
         model.lambda_l2 = params['lambda_l2']
         model.verbose = params['verbose']
         model.save()
+        from .YGT import train
+        t = train.trainModel()
+        t.train(model.id)
+        model.trainSuccess = 1
+        model.save()
         return JsonResponse({'status': 'ok', 'model_id': model.id})
 
     if controlAttribute == 'modelList':

@@ -5,10 +5,30 @@
     <button id="endTraining" class="btn btn-warning">结束训练</button>
     <hr>
 
+    <div id="progress" style="display: none;">
+        <div class="alert alert-info" id="progress-alert">
+            <strong>正在训练！</strong>请耐心等待。
+        </div>
+        <div class="progress" style="height: 40px;" id="progress-bar">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:100%; height: 100%;"></div>
+        </div>
+    </div>
+    <div id="trainResult" class="alert" style="display: none;">
+        <strong>成功！</strong>
+    </div>
+
 
     <form id="paramsForm" class="form-horizontal" onsubmit="return false;">
-        <label for="objective">objective</label>
-        <input type="text" id="objective" value="regression">
+        <label for="objective">模型</label>
+        <select id="objective">
+            <option selected>regression</option>
+            <option>regression_l1</option>
+            <option>huber</option>
+            <option>fair</option>
+            <option>poisson</option>
+            <option>gammma</option>
+            <option>binary</option>
+        </select>
         <label for="metric">metric</label>
         <input type="text" id="metric" value="mse">
         <label for="learning_rate">learning rate</label>
@@ -49,7 +69,7 @@
         </select>
         <button id="chooseModelBtn" class="btn btn-primary">选择用户端模型</button>
     </form>
-    <label for="currentModel">当前使用的模型</label><div id="currentModelDiv">123</div>
+    <label for="currentModel">当前选择的模型</label><div id="currentModelDiv">123</div>
 
 
     <script type="text/javascript">
@@ -86,20 +106,28 @@
                 verbose: $('#verbose').val(),
                 comment: $('#comment').val()
             };
+            $("#progress").show();
             $.ajax({
                 type: "GET",
                 url: "api/model/startTraining",
                 data: params,
-                async: false,
+                async: true,
                 error: function (request) {
                     console.log(request);
+                    $("#progress").hide();
+                    $("#trainResult").addClass("alert-warning");
+                    $("#trainResult").html("<strong>训练失败！</strong>");
+                    $("#trainResult").show();
                 },
                 success: function (response) {
                     console.log(response);
-                    alert("模型编号：" + response.model_id);
+                    $("#trainResult").addClass("alert-success");
+                    $("#trainResult").html("<strong>训练成功！</strong> 模型编号：" + response.model_id);
+                    $("#trainResult").show();
                     getModelList();
+                    $("#progress").hide();
                 }
-            })
+            });
         });
 
         function getModelList(){
@@ -114,7 +142,6 @@
                 },
                 success: function (response) {
                     var modelList =response.modelList;
-                    console.log(modelList);
                     $("#modelListSelectF").children().remove();
                     $("#modelListSelectF").prepend("<option value='0'>请选择id</option>");
                     for (var i = 0; i < modelList.length; i++ ){
@@ -140,8 +167,8 @@
         }
 
         $(document).ready(function () {
-                getModelList();
-                getCurrentModel();
+            getModelList();
+            getCurrentModel();
         });
 
         $("#chooseModelBtn").click(function () {
