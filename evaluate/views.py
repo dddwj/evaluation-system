@@ -267,5 +267,21 @@ def modelControl(request, controlAttribute):
         models_logs.objects.filter(id=model_id).update(inUseFlag=1)
         return JsonResponse({'status': 'ok'})
 
+    if controlAttribute == 'predict':   # 预测一套房子
+        print(request.get_raw_uri())
+        district = request.GET.get('district')
+        address = request.GET.get('address')
+        house_type = '住宅'
+        time = int(request.GET.get('time'))
+        all_floor = int(request.GET.get('all_floor'))
+        floor = int(request.GET.get('floor'))
+        acreage = int(request.GET.get('acreage'))
+        from .YGT import predict
+        p = predict.predict()
+        p.addCase(district, address, house_type, time, all_floor, floor, acreage)
+        res = p.predict()[0]
+        print(res)
+        return JsonResponse({'status': 'ok', 'res': round(float(res),2)})
+
 
 

@@ -1,8 +1,8 @@
 {% extends "evaluate/admin.html" %}
 {% block content %}
     {{ block.super }}
-    <button id="logTraining" class="btn btn-primary">查看训练情况</button>
-    <button id="endTraining" class="btn btn-warning">结束训练</button>
+{#    <button id="logTraining" class="btn btn-primary">查看训练情况</button>#}
+{#    <button id="endTraining" class="btn btn-warning">结束训练</button>#}
     <hr>
 
     <div id="progress" style="display: none;">
@@ -56,7 +56,7 @@
         <label for="comment">comment</label>
         <input type="text" id="comment" value="新加的模型">
 
-        <input type="submit" id="startTrainingBtn" class="btn btn-primary" value="开始训练"/>
+        <input type="submit" id="startTrainingBtn" class="btn btn-primary" value="开始训练"/><div>2017-02 ~ 2017-02系统不会崩溃</div>
         <input type="button" id="setParamsBtn" class="btn btn-primary" value="修改参数">
         <input type="button" id="confirmParamsBtn" class="btn btn-primary" value="锁定参数">
     </form>
@@ -69,7 +69,19 @@
         </select>
         <button id="chooseModelBtn" class="btn btn-primary">选择用户端模型</button>
     </form>
-    <label for="currentModel">当前选择的模型</label><div id="currentModelDiv">123</div>
+    <div>当前选择的模型：<label style="color: red" id="currentModelDiv">none</label></div>
+
+    <hr>
+    <form id="testEvaluatingForm" onsubmit="return false;">
+        <input type="text" value="黄浦区" id="district">
+        <input type="text" value="西藏南路1739弄" id="address">
+        <input type="text" value="2004" id="time">
+        <input type="text" value="34" id="all_floor">
+        <input type="text" value="10" id="floor">
+        <input type="text" value="103" id="acreage">
+        <button type="button" id="testEvaluatingBtn" class="btn btn-primary">测试估价</button>
+    </form>
+    <div id="testEvaluatingRes"></div>
 
 
     <script type="text/javascript">
@@ -106,6 +118,7 @@
                 verbose: $('#verbose').val(),
                 comment: $('#comment').val()
             };
+            $("#trainResult").hide();
             $("#progress").show();
             $.ajax({
                 type: "GET",
@@ -143,7 +156,7 @@
                 success: function (response) {
                     var modelList =response.modelList;
                     $("#modelListSelectF").children().remove();
-                    $("#modelListSelectF").prepend("<option value='0'>请选择id</option>");
+                    $("#modelListSelectF").prepend("<option value='0'>请选择...</option>");
                     for (var i = 0; i < modelList.length; i++ ){
                         $("#modelListSelectF").append("<option value='" + modelList[i].id + "'>" + modelList[i].comment + "</option>")
                     }
@@ -161,7 +174,8 @@
                 },
                 success: function (response) {
                     console.log(response.model);
-                    $("#currentModelDiv").html(JSON.stringify(response.model));
+{#                    $("#currentModelDiv").html(JSON.stringify(response.model));#}
+                    $("#currentModelDiv").html(response.model.comment);
                 }
             })
         }
@@ -191,12 +205,30 @@
             })
         });
 
+        $('#testEvaluatingBtn').click(function () {
+                $.ajax({
+                    type: 'GET',
+                    url: "api/model/predict",
+                    data: {
+                        district: $("#district").val(),
+                        address: $("#address").val(),
+                        time: $("#time").val(),
+                        all_floor: $("#all_floor").val(),
+                        floor: $("#floor").val(),
+                        acreage: $("#acreage").val()
+                    },
+                    error: function (request) {
+                        console.log(request);
+                        alert("失败");
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        $("#testEvaluatingRes").html("预测价格为：" + response.res + "元");
+                    }
+                })
+            }
+        );
 
     </script>
 
-
-    {% block  field %}
-
-
-    {% endblock %}
 {% endblock %}

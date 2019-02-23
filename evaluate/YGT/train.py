@@ -367,3 +367,4 @@ class trainModel:
         x_train = self.make_train_set(all_df)
         '''模型训练'''
         gbm = self.train_model(x_train, y_train)
+        print("训练成功！")
