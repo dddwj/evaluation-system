@@ -25,7 +25,7 @@ urlpatterns = [
     url('^index',views.index),
     url('^searchlandmark', views.searchlandmark),
     url('^searchinput', views.getDisk),
-    url('^evaluate',views.evaluate),
+    url('^evaluate$',views.evaluate),
     url('^result',views.result),
     url('^admin_login.html$',views.adminPage),
     url('^admin_model.html$',views.modelPage),

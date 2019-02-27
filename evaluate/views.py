@@ -28,7 +28,7 @@ def getDisk(request):
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)
@@ -63,8 +63,6 @@ def result(request):
 def adminPage(request):
     return render(request, "evaluate/admin_login.html")
 
-def modelPage(request):
-    return render(request, "evaluate/admin_model.html")
 
 def spiderPage(request):
     return render(request, "evaluate/admin_spider.html")
@@ -81,7 +79,7 @@ def admin(request):
     except MultiValueDictKeyError:
         return render(request, "evaluate/admin_login.html")
 
-'''
+
 def adminLoginCheck(func):
     def wrapper(request, *args, **kwargs):
         is_login = request.session.get('IS_LOGIN', False)
@@ -89,9 +87,14 @@ def adminLoginCheck(func):
             ret = func(request, *args, **kwargs)
             return ret
         else:
-            return HttpResponseRedirect("administrator_login")
+            return HttpResponseRedirect("admin_login.html")
 
     return wrapper
+
+@adminLoginCheck
+def modelPage(request):
+    return render(request, "evaluate/admin_model.html")
+
 
 
 @csrf_protect
@@ -103,22 +106,22 @@ def administrator_login(request):
             request.session['IS_LOGIN'] = True
             request.session['account'] = account
             return HttpResponseRedirect("administrator")
-        return render(request, "evaluate/administrator_login.html")
+        return render(request, "evaluate/admin_login.html")
     else:
-        return render(request, "evaluate/administrator_login.html")
+        return render(request, "evaluate/admin_login.html")
 
 
 @adminLoginCheck
 def administrator(request):
     context = {'account': request.session.get("account")}
-    return render(request, "evaluate/administrator.html", context=context)
+    return render(request, "evaluate/admin.html", context=context)
 
 
 def scrapy(request):
     cache.set('status', request.GET['status'], 600)
     cache.set('amount', request.GET['amount'], 600)
     return HttpResponse('ok')
-'''
+
 
 
 def trend(request):
@@ -299,6 +302,7 @@ def baseQuery(request):
             cursor.execute(sql)
             responses = cursor.fetchall()
             plates = [list(response)[0] for response in responses]
+            print(plates)
             return JsonResponse({'status': 'ok', 'data': plates})
         else:
             return JsonResponse({'status': "params not fully specified"})
@@ -314,7 +318,7 @@ def chooseDisk(request):
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)
