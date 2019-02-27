@@ -25,12 +25,12 @@ urlpatterns = [
     url('^index',views.index),
     url('^searchlandmark', views.searchlandmark),
     url('^searchinput', views.getDisk),
-    url('^evaluate',views.evaluate),
-    url('^result',views.result),
-    url('^administrator',views.admin),
-    url('^trend.html',views.trend),
-    url('^average.html',views.average),
-    url('^chooseDisk.html',views.chooseDisk),
+    url('^evaluate', views.evaluate),
+    url('^result', views.result),
+    url('^administrator', views.admin),
+    url('^trend.html', views.trend),
+    url('^average.html', views.average),
+    url('^chooseDisk.html', views.chooseDisk),
     url('^diskDetail.html', views.diskDetail)
 
 

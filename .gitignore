@@ -6,6 +6,7 @@
 /evaluate/YGT/data/2018-[01][0-9]/*.txt
 /evaluate/YGT/data/测试月.xlsx
 /evaluate/YGT/*_model/*_result.csv
+getUrlParam.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
