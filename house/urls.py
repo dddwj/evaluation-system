@@ -25,14 +25,19 @@ urlpatterns = [
     url('^index',views.index),
     url('^searchlandmark', views.searchlandmark),
     url('^searchinput', views.getDisk),
-    url('^evaluate', views.evaluate),
-    url('^result', views.result),
-    url('^administrator', views.admin),
-    url('^trend.html', views.trend),
-    url('^average.html', views.average),
-    url('^chooseDisk.html', views.chooseDisk),
-    url('^diskDetail.html', views.diskDetail)
-
-
+    url('^evaluate',views.evaluate),
+    url('^result',views.result),
+    url('^admin_login.html$',views.adminPage),
+    url('^admin_model.html$',views.modelPage),
+    url('^admin_spider.html$',views.spiderPage),
+    url('^admin.html',views.admin),
+    url('^trend.html',views.trend),
+    url('^average.html',views.average),
+    url('^api/average/', views.averageQuery),
+    url('^api/base/', views.baseQuery),
+    url('^api/model/(.+)/$', views.modelControl),
+    url('^chooseDisk.html',views.chooseDisk),
+    url('^diskDetail.html', views.diskDetail),
+    url('^api/getAvg',views.getAvg)
 
 ]

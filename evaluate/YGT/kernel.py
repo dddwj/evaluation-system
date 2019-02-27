@@ -30,7 +30,7 @@ result_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_result.c
 # 训练集起始月份
 beginDate = '2018-01'
 # 训练集终止月份
-endDate = '2018-04'
+endDate = '2018-02'
 # 房源中位数价格路径
 medprice_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_medprice.csv' % (month, month)
 # 区名特征化路径
@@ -44,6 +44,7 @@ modulelabel_path = os.path.dirname(os.path.realpath(__file__))+'/%s_model/%s_mod
 
 def load_guapai(name, month):
     """读取挂牌数据"""
+    # 训练模型，使用本地数据，提高效率。
     with open(os.path.join(data_path, name, '挂牌.txt'),encoding='utf-8') as f:
         l = []
         for i in f.readlines():
@@ -85,6 +86,7 @@ def load_data():
 
         # 获取经纬度信息
         newdisk_df = pd.read_csv(newdisk_path, usecols=['NewDiskID', 'PropertyID', 'NewDiskName', 'Coordinates'])
+            # newdisk_df = tools.read_basic_table('AD_NewDisk') 训练模型，使用本地数据，不再读取数据库。
         newdisk_df.rename(columns={'NewDiskName': 'name'}, inplace=True)
 
         # 获取板块、环线信息
@@ -439,6 +441,78 @@ if __name__ == '__main__':
 
     prices = pd.DataFrame({'index': x_test['index'], 'price1': y_pred_1, 'price2': y_pred_2})
     ans_df = prices.groupby('index', as_index=False)[['price1', 'price2']].median()     # ax_index参考：https://stackoverflow.com/questions/41236370/what-is-as-index-in-groupby-in-pandas
+    ans_df = pd.merge(test_df[['index', 'NewDiskID']], ans_df, on='index', how='left').drop('index', axis=1)
+
+    price = []
+    train_ids = all_df.NewDiskID.unique()
+    meta_ids = meta_df.NewDiskID.unique()
+    for row in ans_df.values:
+        if row[0] in train_ids:
+            price.append(row[1])
+        elif row[0] in meta_ids:
+            price.append(row[2])
+        else:
+            price.append(np.nan)
+
+    ans_df = test_df.drop('index', axis=1)
+    ans_df['price'] = price
+    ans_df.to_csv(result_path, index=False)
+
+    # 评估模型好坏
+    gap_ratio = np.abs(ans_df.price - ans_df.unit_price) / ans_df.unit_price * 100
+    gap_ratio.dropna(inplace=True)
+    print('覆盖率：', gap_ratio.shape[0] / test_df.shape[0])
+    counts = []
+    for i in range(10, 21):
+        counts.append(['%d%%' % i, (gap_ratio <= i).sum() / gap_ratio.shape[0]])
+    print(pd.DataFrame(counts, columns=['误差', '百分比']))
+
+
+def run():
+    '''加载数据'''
+    meta_df, all_df = load_data()
+    '''处理训练集'''
+    all_df = preprocess(all_df)
+    '''加载训练测试数据'''
+    test_df = pd.read_excel(test_path)
+    test_df.reset_index(inplace=True)
+    print('测试数据量:%d' % test_df.shape[0])
+    test_df.rename(columns={'楼盘名称': 'name',
+                            '房屋类型': 'house_type',
+                            '竣工年份': 'time',
+                            '总楼层数': 'all_floor',
+                            '所属层': 'floor',
+                            '建筑面积(m2)': 'acreage',
+                            '楼盘编号': 'NewDiskID',
+                            '项目名称': 'address',
+                            '正常价格(元)': 'unit_price',
+                            '总价': 'total_price'}, inplace=True)
+    x_train, y_train, x_test, y_test = make_train_test_set(all_df, test_df, meta_df)
+    '''分割训练/验证集'''
+    # x1, x2, y1, y2 = train_test_split(x_train, y_train, train_size=0.9, random_state=0)
+    '''模型训练'''
+    gbm = train_model(x_train, y_train)
+    print('开始测试')
+
+    '''基价测试'''
+    # preds = gbm.predict(x_test[x_train.columns])
+    # result = pd.DataFrame({'NewDiskID': x_test.NewDiskID,
+    #                        '楼盘': x_test.name,
+    #                        '单价': preds,
+    #                        'Mark': x_test.mid.notnull() * 1})
+    # result = result[['NewDiskID', '楼盘', '单价', 'Mark']]
+    # result.to_csv('price.csv', index=False)
+
+    '''单套测试'''
+    y_pred_1 = gbm.predict(
+        x_test[x_train.columns])  # x_test[x_train.columns]，选出对应x_train的列，丢弃name和index属性。同时使得x_test顺序变得和x_train一致
+    x_train.drop('median', axis=1, inplace=True)
+    gbm = train_model(x_train, y_train)
+    y_pred_2 = gbm.predict(x_test[x_train.columns])
+
+    prices = pd.DataFrame({'index': x_test['index'], 'price1': y_pred_1, 'price2': y_pred_2})
+    ans_df = prices.groupby('index', as_index=False)[['price1',
+                                                      'price2']].median()  # ax_index参考：https://stackoverflow.com/questions/41236370/what-is-as-index-in-groupby-in-pandas
     ans_df = pd.merge(test_df[['index', 'NewDiskID']], ans_df, on='index', how='left').drop('index', axis=1)
 
     price = []

@@ -1,11 +1,678 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
 <head>
     <meta charset="UTF-8">
     <title>区域均价</title>
+    <script src="../../static/node_modules/jquery/dist/jquery.js"></script>
+    <style>
+        .content-window-card {
+            position: relative;
+            box-shadow: none;
+            bottom: 0;
+            left: 0;
+            width: auto;
+            padding: 0;
+        }
+
+        .content-window-card p {
+            height: 2rem;
+        }
+
+        .custom-info {
+            border: solid 1px silver;
+        }
+
+        div.info-top {
+            position: relative;
+            background: none repeat scroll 0 0 #F9F9F9;
+            border-bottom: 1px solid #CCC;
+            border-radius: 5px 5px 0 0;
+        }
+
+        div.info-top div {
+            display: inline-block;
+            color: #333333;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 31px;
+            padding: 0 10px;
+        }
+
+        div.info-top img {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            transition-duration: 0.25s;
+        }
+
+        div.info-top img:hover {
+            box-shadow: 0px 0px 5px #000;
+        }
+
+        div.info-middle {
+            font-size: 12px;
+            padding: 10px 6px;
+            line-height: 20px;
+        }
+
+        div.info-bottom {
+            height: 0px;
+            width: 100%;
+            clear: both;
+            text-align: center;
+        }
+
+        div.info-bottom img {
+            position: relative;
+            z-index: 104;
+        }
+
+        span {
+            margin-left: 5px;
+            font-size: 11px;
+        }
+
+        .info-middle img {
+            float: left;
+            margin-right: 6px;
+        }
+    </style>
 </head>
+
 <body>
 地图
+<br>
+小区当月均价、本季度均价、本年均价；板块均价、行政区均价
+<hr>
+这一部分以后用来画折线图。
+<form id="queryDiskForm">
+    <div>
+        <div>小区名称：</div>
+        <label>
+            <input type="text" name="diskName" value="华理苑">
+        </label>
+        <div>月份:</div>
+        <input type="text" name="month" value="2017-01">
+        <br>
+        <input type="button" id="doQueryDiskBtn" value="查询指定小区一年来的均价；做月度、季度、年度分析">
+    </div>
+</form>
+<script type="text/javascript">
+    $("#doQueryDiskBtn").click(function () {
+        $.ajax({
+            type: "GET",
+            url: "api/average/diskName",
+            data: $('#queryDiskForm').serialize(),
+            dataType: "json",
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                if (data.data === "no match")
+                    alert("无匹配小区！");
+                else if (data.data === "month out of range")
+                    alert("月份超出数据库范围！");
+                else {
+                    console.log(data);
+                    var disk_year_avg_list = data.data;
+                    console.log(data.data);
+                    alert(JSON.stringify(disk_year_avg_list));
+                    // set option
+                }
+            }
+        });
+    });
+</script>
+<hr>
+<hr>
 
+
+
+<form id="queryPlateForm">
+    <select id="areaSelectF" onchange="areaChange()">
+        <option selected="selected"></option>
+        <option>黄浦区</option>
+        <option>徐汇区</option>
+        <option>长宁区</option>
+        <option>静安区</option>
+        <option>浦东新区</option>
+        <option>杨浦区</option>
+        <option>普陀区</option>
+        <option>虹口区</option>
+        <option>闸北区</option>
+        <option>闵行区</option>
+        <option>嘉定区</option>
+        <option>松江区</option>
+        <option>宝山区</option>
+        <option>崇明区</option>
+        <option>青浦区</option>
+        <option>金山区</option>
+        <option>奉贤区</option>
+    </select>
+    <br>
+    <select id="plateSelectF"></select>
+    <input type="button" id="doQueryPlateBtn" value="查询该板块内所有楼盘指定月的均价">
+    <br>
+    <input type="text" id="doQueryMonth" value="201901" readonly>
+    <input type="button" id="drawPlateBtn" value="显示区县">
+    <hr>
+</form>
+<script type="text/javascript">
+// 查询该板块内所有楼盘指定月的均价
+    $('#doQueryPlateBtn').click(function () {
+        $.ajax({
+            type: "GET",
+            url: "api/average/plate",
+            data: {
+                plate: $('#plateSelectF').val(),
+                month: $("#doQueryMonth").val()
+            },
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                var plate_month_avg_list = data.data;
+                alert(JSON.stringify(plate_month_avg_list))
+            }
+        })
+    })
+</script>
+
+
+<div id="container" style="width: 1200px; height: 900px; "></div>
+
+<script type="text/javascript">
+    function bMapTransAMap(lng, lat) {      // ref: https://blog.csdn.net/weixin_39015132/article/details/82958562
+        let x_pi = 3.14159265358979324 * 3000.0 / 180.0;
+        let x = lng - 0.0065;
+        let y = lat - 0.006;
+        let z = Math.sqrt(x * x + y * y) - 0.00002 * Math.sin(y * x_pi);
+        let theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * x_pi);
+        let lngs = z * Math.cos(theta);
+        let lats = z * Math.sin(theta);
+        return [lngs, lats];
+        // return {lng: lngs,lat: lats};   
+    }
+
+    var map;
+    var points = [];    // 小区坐标点集合
+    var markers = [];   // 小区标记点集合
+    var cluster;        // 聚集点集合
+    var markers_show = true; // 小区标记点是否显示
+    var diskNames = []; // 小区名称集合
+    var prices = [];    // 小区价格集合
+    var plates = [];    // 小区所属板块集合
+    var polygons = [];  // 地图上描出的多边形集合
+    var platePoints = []; // 板块坐标点集合
+    var plateNames = [];
+    var platePrices = [];
+    var plateMarkers = [];
+    var districtPoints = [];
+    var districtNames = [];
+    var districtPrices = [];
+    var districtMarkers = [];
+    var marker_shanghai;
+
+    function areaChange() {
+        $.ajax({
+            type: "GET",
+            url: "api/base/plate",
+            data: {
+                area: $('#areaSelectF').val().split("区")[0].split("新")[0],
+            },
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+            },
+            success: function (data) {
+                var plates = data.data;
+                $('#plateSelectF').html("");
+                for (var i = 0; i < plates.length; i++) {
+                    $('#plateSelectF').append("<option>" + plates[i] + "</option>");
+                }
+            }
+        });
+    }
+
+
+    // 暂时没有用到。用来改变聚集点的样式。
+    var changeStyle = function (context) {
+        var count = points.length;
+        var factor = Math.pow(context.count / count, 1 / 18);
+        var div = document.createElement('div');
+        var Hue = 180 - factor * 180;
+        var bgColor = 'hsla(' + Hue + ',100%,50%,0.7)';
+        var fontColor = 'hsla(' + Hue + ',100%,20%,1)';
+        var borderColor = 'hsla(' + Hue + ',100%,40%,1)';
+        var shadowColor = 'hsla(' + Hue + ',100%,50%,1)';
+        div.style.backgroundColor = bgColor;
+        var size = Math.round(30 + Math.pow(context.count / count, 1 / 5) * 20);
+        div.style.width = div.style.height = size + 'px';
+        // div.style.border = 'solid 1px ' + borderColor;
+        // div.style.borderRadius = size / 2 + 'px';
+        // div.style.boxShadow = '0 0 1px ' + shadowColor;
+        div.innerHTML = context.count;
+        div.style.lineHeight = size + 'px';
+        div.style.color = fontColor;
+        div.style.fontSize = '14px';
+        div.style.textAlign = 'center';
+        //  context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2));
+        context.marker.setContent(div)
+    };
+
+    function getData() {
+        points = [];
+        markers = [];
+        diskNames = [];
+        prices = [];
+        plates = [];
+        $.ajax({
+            type: "GET",
+            url: "api/average/allDisks",
+            data: {month: $("#doQueryMonth").val()},
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+                console.log(request);
+            },
+            success: function (data) {
+                // 整理服务器传来的数据，供后面画地图用
+                var allDisks = data.data;
+                allDisks.forEach(function (disk) {
+                    let coords = disk[3].split(',');
+                    points.push(bMapTransAMap(coords[0], coords[1]));
+                    diskNames.push(disk[0]);
+                    prices.push(disk[2]);
+                    plates.push(disk[1]);
+                });
+
+                // 对每一个点规定样式
+                for (var i = 0; i < points.length; i++) {
+                    // 在地图上标出点（aka. 覆盖物）
+                    var marker = new AMap.Marker({
+                        position: points[i],
+                        extData: i
+                    });
+
+                    // 指定所标出覆盖物的样式与文字内容
+                    var index = i;
+                    var diskName = diskNames[i];
+                    var price = Math.round(prices[i]);
+                    var div = document.createElement('div');
+                    div.style = "width: 100px; height: 65px; " +
+                        "border-radius: 24px;" +
+                        "text-align: center;";
+                    var factor = Math.pow(Number(prices[i]) / 150000, 0.4);
+                    var Hue = 180 - factor * 180;
+                    div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
+                    div.style.color = "#000000";
+                    div.innerHTML = "<p>" + price + "元/㎡</p> <p>" + diskName + "</p>" + "<p id='index' hidden>" + index + "</p>";
+                    // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。
+                    // 也可以用marker的extData属性来存放。
+                    marker.setContent(div);
+
+
+                    // 指定点击覆盖物时弹出的提示窗体
+                    marker.on('click', function (context) {
+                        // 获取覆盖物的索引，从而获取plate, price, diskName。达到传值的效果
+                        var div = this.getContent();
+                        var index = div.childNodes[3].innerText;
+                        var diskName = diskNames[index];
+                        var price = Math.round(prices[index]);
+                        var plate = plates[index];
+
+                        // 开始绘制提示窗体
+                        var title = diskName;
+                        var content = [];
+                        content.push("<img src='http://tpc.googlesyndication.com/simgad/5843493769827749134'>所属板块：" + plate);
+                        content.push("<span style=font-size:14px;color:#F00;>均价: " + price + "元/㎡</span>");
+                        content.push("<a href='https://ditu.amap.com/detail/B000A8URXB?citycode=110105'>详细信息</a>");
+
+                        infoWindow = new AMap.InfoWindow({
+                            isCustom: true,
+                            offset: new AMap.Pixel(60, -35),
+                            content: createInfoWindow(title, content.join("<br/>")) // 使用创建窗体的函数
+                        });
+                        infoWindow.open(map, context.target.getPosition());
+                    });
+
+
+                    // 最后将渲染完的这个覆盖物放入集合中
+                    markers.push(marker);
+                }
+
+                // 添加聚集点的功能
+                map.plugin(["AMap.MarkerClusterer"], function () {
+                    cluster = new AMap.MarkerClusterer(map, markers, {
+                        gridSize: 40,
+                        // renderCircleMarker: changeStyle,
+                        zoomOnClick: true
+                    });
+                });
+
+            }
+        });
+    }
+
+    function getDistrictData() {
+        $.ajax({
+            type: "GET",
+            url: "api/average/allDistricts",
+            data: {month: $("#doQueryMonth").val()},
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+                console.log(request);
+            },
+            success: function (data) {
+                var allDistricts = data.data;
+                allDistricts.forEach(function (district) {
+                    let coords = district[2].split(',');
+                    districtPoints.push(bMapTransAMap(coords[0], coords[1]));
+                    districtNames.push(district[1]);
+                    districtPrices.push(district[0]);
+                });
+                for (var i = 0; i < districtPoints.length; i++) {
+                    var marker = new AMap.Marker({
+                        map: map,
+                        position: districtPoints[i],
+                        extData: {index: i}  // index
+                    });
+                    var districtName = districtNames[i];
+                    var price = Math.round(districtPrices[i]);
+                    var div = document.createElement('div');
+                    div.style = "width: 100px; height: 65px; " +
+                        "border-radius: 24px;" +
+                        "text-align: center;";
+                    var factor = Math.pow(Number(districtPrices[i]) / 130000, 0.5);
+                    var Hue = 180 - factor * 180;
+                    div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
+                    div.style.color = "#000000";
+                    div.innerHTML = "<p>" + price + "元/㎡</p> <p>" + districtName + "</p>";
+                    // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。
+                    // 也可以用marker的extData属性来存放。
+                    marker.setContent(div);
+                    marker.on('click', function (context) {
+                        map.setZoom(13);
+                        map.setCenter(districtPoints[this.getExtData()['index']]);
+                    });
+
+                    districtMarkers.push(marker);
+                }
+            }
+        });
+    }
+
+    function getPlateData() {   // 与getDistrictData()函数相同流程
+        $.ajax({
+            type: "GET",
+            url: "api/average/allPlates",
+            data: { month: $("#doQueryMonth").val()},
+            dataType: 'json',
+            async: false,
+            error: function (request) {
+                alert("Connection Error!");
+                console.log(request);
+            },
+            success: function (data) {
+                var allPlates = data.data;
+                allPlates.forEach(function (plate) {
+                    let coords = plate[2].split(',');
+                    platePoints.push(bMapTransAMap(coords[0], coords[1]));
+                    plateNames.push(plate[1]);
+                    platePrices.push(plate[0]);
+                });
+                for(var i = 0; i < platePoints.length; i++){
+                    var marker = new AMap.Marker({
+                        map: map,
+                        position: platePoints[i],
+                        extData: {index: 1}
+                    });
+                    var plateName = plateNames[i];
+                    var price = Math.round(platePrices[i]);
+                    var div = document.createElement('div');
+                    div.style = "width: 100px; height: 65px; " +
+                        "border-radius: 24px;" +
+                        "text-align: center;";
+                    var factor = Math.pow(Number(platePrices[i]) / 130000, 0.5);
+                    var Hue = 180 - factor * 180;
+                    div.style.backgroundColor = 'hsla(' + Hue + ',80%, 60%,0.5)';
+                    div.style.color = "#000000";
+                    div.innerHTML = "<p>" + price + "元/㎡</p> <p>" + plateName + "板块</p>";
+                    // 用这个hidden的index字段来传递。方便在onclick函数中获知点击了哪个覆盖物。
+                    // 也可以用marker的extData属性来存放。
+                    marker.setContent(div);
+                    marker.on('click', function () {
+                        map.setZoom(15);
+                        console.log(platePoints[this.getExtData()['index']]);
+                        console.log(this.getPosition());
+                        map.setCenter(this.getPosition());
+                    });
+
+                    plateMarkers.push(marker);
+                }
+            }
+
+        })
+    }
+
+    function getOverallData() {
+        // 画"上海市"的覆盖物       暂时还没有"上海两个字"，以后考虑用ps做一个好看的icon。
+        marker_shanghai = new AMap.Marker({
+            map: map,
+            center: [121.491893, 31.200785],
+        });
+        marker_shanghai.on('click', function () {
+            map.setZoom(10);
+        });
+        marker_shanghai.setMap(map);
+    }
+
+    // 创建信息窗体
+    function createInfoWindow(title, content) {
+        var info = document.createElement("div");
+        info.className = "custom-info input-card content-window-card";
+        //可以通过下面的方式修改自定义窗体的宽高
+        //info.style.width = "400px";
+        // 定义顶部标题
+        var top = document.createElement("div");
+        var titleD = document.createElement("div");
+        var closeX = document.createElement("img");
+        top.className = "info-top";
+        titleD.innerHTML = title;
+        closeX.src = "https://webapi.amap.com/images/close2.gif";
+        closeX.onclick = closeInfoWindow;
+
+        top.appendChild(titleD);
+        top.appendChild(closeX);
+        info.appendChild(top);
+
+        // 定义中部内容
+        var middle = document.createElement("div");
+        middle.className = "info-middle";
+        middle.style.backgroundColor = 'white';
+        middle.innerHTML = content;
+        info.appendChild(middle);
+
+        // 定义底部内容
+        var bottom = document.createElement("div");
+        bottom.className = "info-bottom";
+        bottom.style.position = 'relative';
+        bottom.style.top = '0px';
+        bottom.style.margin = '0 auto';
+        var sharp = document.createElement("img");
+        sharp.src = "https://webapi.amap.com/images/sharp.png";
+        bottom.appendChild(sharp);
+        info.appendChild(bottom);
+        return info;
+    }
+
+    // 关闭信息窗体
+    function closeInfoWindow() {
+        map.clearInfoWindow();
+    }
+
+
+    function drawMap() {
+        // 画基础地图
+        map = new AMap.Map('container', {
+            zoom: 13,
+            viewMode: '2D',
+            lang: 'cn',
+            minClusterSize: 5,
+            maxZoom: 15,
+            features: ['bg', 'road', 'building'],     // 去掉了地图上的标注(point)，美观一点。
+            mapStyle: "amap://styles/light",
+            resizeEnable: true
+        });
+
+        // 画地图缩放工具栏 和 比例尺
+        AMap.plugin([
+            'AMap.ToolBar',
+            'AMap.Scale'
+        ], function () {
+            map.addControl(new AMap.Scale({
+                visible: true
+            }));
+            map.addControl(new AMap.ToolBar({
+                visible: true
+            }));
+        });
+
+        // 地图仅限展示上海及上海周边
+        map.setLimitBounds(new AMap.Bounds(
+            new AMap.LngLat(121.039371, 30.613802),
+            new AMap.LngLat(122.058353, 31.74872)
+        ));
+
+        // 从服务器取数据并绘图(小区层面)
+        getData();
+        // 从服务器取数据并绘图(区县层面)
+        getDistrictData();
+        // 从服务器去数据并绘图(板块层面)
+        getPlateData();
+
+        // 画一个总的"上海"覆盖点。考虑用ps做一个好看的标记。
+        getOverallData();
+
+        function disk_on() {
+            markers.forEach(function (marker) {
+                marker.show();
+            });
+            cluster.setMarkers(markers);
+        }
+        function disk_off() {
+            markers.forEach(function (marker) {
+                marker.hide();
+            });
+            cluster.clearMarkers();
+        }
+        function plate_on() {
+            plateMarkers.forEach(function (marker) {
+                marker.show();
+            });
+        }
+        function plate_off() {
+            plateMarkers.forEach(function (marker) {
+                marker.hide();
+            });
+        }
+        function district_on() {
+            districtMarkers.forEach(function (marker) {
+                marker.show();
+            });
+        }
+        function district_off() {
+            districtMarkers.forEach(function (marker) {
+                marker.hide();
+            });
+        }
+        function shanghai_on() {
+            marker_shanghai.show();
+        }
+        function shanghai_off() {
+            marker_shanghai.hide();
+        }
+
+        // 根据缩放比例显示隐藏marker
+        map.on('zoomend', function () {      // 12,13 -- 展示板块。 14,15,16,17 -- 展示小区。  10~11 -- 展示区县。 0~9 -- 展示"上海市"
+            var zoom = map.getZoom();
+            console.log("Zoom:" + zoom);
+            if (zoom >= 14) {
+                disk_on();
+                plate_off();
+                district_off();
+                shanghai_off();
+                return;
+            } else if (zoom >= 12) {
+                disk_off();
+                plate_on();
+                district_off();
+                shanghai_off();
+                return;
+            } else if (zoom >= 10) {
+                disk_off();
+                plate_off();
+                district_on();
+                shanghai_off();
+            } else {
+                disk_off();
+                plate_off();
+                district_off();
+                shanghai_on();
+            }
+        });
+    }
+
+    // 网页加载完成后绘图
+    window.init = function () {
+        drawMap();
+        drawBound('city', '上海');
+    };
+
+    $("#drawPlateBtn").click(function () {
+        drawBound('district', $('#areaSelectF').val());
+    });
+
+    // 画区县的边界
+    function drawBound(level, name) {
+        map.remove(polygons);
+        map.plugin(['AMap.DistrictSearch'], function () {
+            var district = new AMap.DistrictSearch({
+                extensions: 'all',
+                level: level
+            });
+            district.search(name, function (status, result) {
+                var bounds = result.districtList[0].boundaries;
+                polygons = [];
+                if (bounds) {
+                    for (var i = 0, l = bounds.length; i < l; i++) {
+                        //生成行政区划polygon
+                        var polygon = new AMap.Polygon({
+                            map: map,
+                            strokeWeight: 1,
+                            path: bounds[i],
+                            fillOpacity: 0.3,
+                            fillColor: '#CCF3FF',
+                            strokeColor: '#CC66CC'
+                        });
+                        polygons.push(polygon)
+                    }
+                    // 地图自适应
+                    map.setFitView()
+                }
+
+            })
+        })
+    }
+</script>
+<script type="text/javascript"
+        src="https://webapi.amap.com/maps?v=1.4.12&key=d2c86de9994f80ca57ae2ea5065aae27&callback=init"></script>
 </body>
 </html>

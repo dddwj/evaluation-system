@@ -35,10 +35,14 @@
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="index.html">首页</a>
+                    <a class="nav-link" href="index.html">查找小区</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="searchlandmark.html">房价评估</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">房价评估</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="searchlandmark.html">单套评估</a>
+                        <a class="dropdown-item" href="#">批量评估</a>
+                    </div>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -46,9 +50,12 @@
                         房价分析
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="trend.html">小区房价走势</a>
+                        <a class="dropdown-item" href="trend.html">房价走势</a>
                         <a class="dropdown-item" href="average.html">区域均价</a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">浏览历史推荐</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">关于我们</a>
@@ -77,11 +84,11 @@
                         <form class="form-group" onsubmit="return false;">
                             <div class="form-group">
                                 <label>账号</label>
-                                <input id="userID" v-model="userID" class="form-control" type="text" placeholder="">
+                                <input id="userID" class="form-control" type="text" placeholder="">
                             </div>
                             <div class="form-group">
                                 <label>密码</label>
-                                <input id="password" v-model="password" class="form-control" type="password"
+                                <input id="password" class="form-control" type="password"
                                        placeholder="">
                             </div>
                             <div class="text-right">
@@ -125,6 +132,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="#metro" data-toggle="tab">
                         按地铁线路搜索</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#metro" data-toggle="tab">
+                        按价格区间查找</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#metro" data-toggle="tab">
+                        多条件查找</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#metro" data-toggle="tab">
+                        浏览历史推荐</a>
                     </li>
                 </ul>
                 </nav>
@@ -248,7 +267,7 @@
 <footer class="page-footer font-small pt-3">
     <!-- Copyright -->
     <div class="footer-copyright text-center py-3">© 2018 Copyright&nbsp&nbsp&nbsp
-        <a href="administrator.html"> 管理员登录</a>
+        <a href="admin_login.html"> 管理员登录</a>
     </div>
     <!-- Copyright -->
 </footer>
