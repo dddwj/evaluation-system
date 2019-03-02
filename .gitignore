@@ -5,6 +5,10 @@ model_*/
 # dwj
 /evaluate/YGT/database_tools.py
 
+package-lock.json
+/static/node_modules/
+/evaluate/YGT/
+
 # Customize
 .idea
 .DS_Store

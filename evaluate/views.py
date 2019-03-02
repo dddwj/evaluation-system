@@ -1,10 +1,9 @@
 from django.shortcuts import render
 from django.http import *
-from django.core import serializers
-from .YGT import PredictOne
+from evaluate.YGT import PredictOne, train
+
+
 # Create your views here.
-from django.views.decorators.csrf import csrf_protect
-from django.core.cache import cache
 
 
 def index(request):
@@ -23,7 +22,6 @@ def getDisk(request):
 
     selected_disk = request.GET['diskname']
 
-    import sqlalchemy
     from sqlalchemy.ext.automap import automap_base
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
@@ -35,6 +33,7 @@ def getDisk(request):
     db = sessionmaker(bind=engine)()
     ADNewDisk = Base.classes.AD_NewDisk
     ADNewDiskAddress = Base.classes.AD_NewDiskAddress
+
 
     disk = db.query(ADNewDisk).filter(ADNewDisk.NewDiskName == selected_disk).first()
 
@@ -309,7 +308,6 @@ def baseQuery(request):
 def chooseDisk(request):
     # lineNumber = request.GET['line']
     searchInput = request.GET['diskNameInput']
-    import sqlalchemy
     from sqlalchemy.ext.automap import  automap_base
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
@@ -365,7 +363,6 @@ def modelControl(request, controlAttribute):
         model.lambda_l2 = params['lambda_l2']
         model.verbose = params['verbose']
         model.save()
-        from .YGT import train
         t = train.trainModel()
         t.train(model.id)
         model.trainSuccess = 1
@@ -397,7 +394,7 @@ def modelControl(request, controlAttribute):
         all_floor = int(request.GET.get('all_floor'))
         floor = int(request.GET.get('floor'))
         acreage = int(request.GET.get('acreage'))
-        from .YGT import predict
+        from evaluate.YGT import predict
         p = predict.predict()
         p.addCase(district, address, house_type, time, all_floor, floor, acreage)
         res = p.predict()[0]
