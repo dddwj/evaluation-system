@@ -89,6 +89,11 @@ def adminLoginCheck(func):
 
     return wrapper
 
+@adminLoginCheck
+def modelPage(request):
+    return render(request, "evaluate/admin_model.html")
+
+
 
 # @csrf_protect
 def administrator_login(request):
@@ -298,6 +303,7 @@ def baseQuery(request):
             cursor.execute(sql)
             responses = cursor.fetchall()
             plates = [list(response)[0] for response in responses]
+            print(plates)
             return JsonResponse({'status': 'ok', 'data': plates})
         else:
             return JsonResponse({'status': "params not fully specified"})
