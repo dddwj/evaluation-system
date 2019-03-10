@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'^api/scrapy/job/schedule', views.scrapy_job_schedule),
     url(r'^api/scrapy/job/cancel', views.scrapy_job_cancel),
     url(r'^api/scrapy/job/status', views.scrapy_job_status),
+
+    # url...
 ]

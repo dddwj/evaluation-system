@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import *
-from evaluate.YGT import PredictOne, train
+from evaluate.YGT import train, predict
 
 
 # Create your views here.
@@ -26,7 +26,7 @@ def getDisk(request):
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)
@@ -52,18 +52,15 @@ def result(request):
     floor = int(request.GET['curFloor'])
     acreage = float(request.GET['square'])
 
-    houses = []
-    houses.append(PredictOne.init(district, address, house_type, time, all_floor, floor, acreage))
-    result = str(PredictOne.predict(houses)["predict_price"][0])
+    p = predict.predict()
+    p.addCase(district,address,house_type,time,all_floor,floor,acreage)
+    res = p.predict()[0]
+    return render(request, "evaluate/result.html", {'result': res})
 
-    return render(request, "evaluate/result.html", {'result': result[0:8]})
-    pass
 
 def adminPage(request):
     return render(request, "evaluate/admin_login.html")
 
-def modelPage(request):
-    return render(request, "evaluate/admin_model.html")
 
 def spiderPage(request):
     return render(request, "evaluate/admin_spider.html")
@@ -80,7 +77,7 @@ def admin(request):
     except MultiValueDictKeyError:
         return render(request, "evaluate/admin_login.html")
 
-'''
+
 def adminLoginCheck(func):
     def wrapper(request, *args, **kwargs):
         is_login = request.session.get('IS_LOGIN', False)
@@ -88,12 +85,12 @@ def adminLoginCheck(func):
             ret = func(request, *args, **kwargs)
             return ret
         else:
-            return HttpResponseRedirect("administrator_login")
+            return HttpResponseRedirect("admin_login.html")
 
     return wrapper
 
 
-@csrf_protect
+# @csrf_protect
 def administrator_login(request):
     if request.method == "POST":
         account = request.POST['account']
@@ -102,23 +99,26 @@ def administrator_login(request):
             request.session['IS_LOGIN'] = True
             request.session['account'] = account
             return HttpResponseRedirect("administrator")
-        return render(request, "evaluate/administrator_login.html")
+        return render(request, "evaluate/admin_login.html")
     else:
-        return render(request, "evaluate/administrator_login.html")
+        return render(request, "evaluate/admin_login.html")
 
 
 @adminLoginCheck
 def administrator(request):
     context = {'account': request.session.get("account")}
-    return render(request, "evaluate/administrator.html", context=context)
+    return render(request, "evaluate/admin_login.html", context=context)
 
 
 def scrapy(request):
     cache.set('status', request.GET['status'], 600)
     cache.set('amount', request.GET['amount'], 600)
     return HttpResponse('ok')
-'''
 
+
+@adminLoginCheck
+def modelPage(request):
+    return render(request, "evaluate/admin_model.html")
 
 def trend(request):
     return render(request, "evaluate/trend.html")
@@ -312,7 +312,7 @@ def chooseDisk(request):
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)

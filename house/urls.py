@@ -25,7 +25,7 @@ urlpatterns = [
     url('^index',views.index),
     url('^searchlandmark', views.searchlandmark),
     url('^searchinput', views.getDisk),
-    url('^evaluate',views.evaluate),
+    url('^evaluate$',views.evaluate),
     url('^result',views.result),
     url('^admin_login.html$',views.adminPage),
     url('^admin_model.html$',views.modelPage),
@@ -39,5 +39,6 @@ urlpatterns = [
     url('^chooseDisk.html',views.chooseDisk),
     url('^diskDetail.html', views.diskDetail),
     url('^api/getAvg',views.getAvg),
-    url('^myadmin/',include("myadmin.urls"))
+    url('^myadmin/',include("myadmin.urls")),
+    # url('^')
 ]
