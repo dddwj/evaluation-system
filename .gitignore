@@ -7,7 +7,10 @@ model_*/
 
 package-lock.json
 /static/node_modules/
-/evaluate/YGT/
+/evaluate/YGT/cache/
+/evaluate/YGT/data/
+/evaluate/xlsx/out/
+/evaluate/YGT/5_model
 
 # Customize
 .idea

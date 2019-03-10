@@ -405,7 +405,45 @@ def modelControl(request, controlAttribute):
         p.addCase(district, address, house_type, time, all_floor, floor, acreage)
         res = p.predict()[0]
         print(res)
-        return JsonResponse({'status': 'ok', 'res': round(float(res),2)})
+        return JsonResponse({'status': 'ok', 'res': res})
+
+def quickPage(request):
+    return render(request, "evaluate/quickEvaluate.html")
+
+def doQuickEvaluate(request):
+    xlsxFile = request.FILES.get("file", None)
+    import time
+    xlsxTime = str(time.strftime('%Y-%m-%d-%H%M',time.localtime(time.time())))
+    xlsxPath = 'evaluate/xlsx/out/' + xlsxTime + '.xlsx'
+    if not xlsxFile:
+        return HttpResponseBadRequest
+    import pandas as pd
+    import numpy as np
+    df = pd.read_excel(xlsxFile)
+    p = predict.predict()
+    for index, row in df.iterrows():
+        p.addCase(row["区县"], row['地址'], '住宅',row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'])
+    res = p.predict()
+    df['估价结果'] = res
+    # df['估价结果'].fillna("找不到该地址下的小区")
+    # def fun(x):
+    #     if x == 'nan':
+    #         return "找不到该地址下的小区"
+    #     else:
+    #         return x
+    # df['估价结果'] = res.apply(lambda x: x if not x.empty() else '找不到')
+    # df['估价结果'].fillna("找不到该地址下的小区")
+    df.to_excel(xlsxPath)
+    file=open(xlsxPath,'rb')
+    response = FileResponse(file)
+    response['Content-Type']='application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="result_%s.xlsx"' % xlsxTime
+    return response
 
 
-
+def getQuickExample(request):
+    file = open('evaluate/xlsx/in/example.xlsx', 'rb')
+    response = FileResponse(file)
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'attachment;filename="example.xlsx"'
+    return response

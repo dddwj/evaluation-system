@@ -39,6 +39,8 @@ urlpatterns = [
     url('^chooseDisk.html',views.chooseDisk),
     url('^diskDetail.html', views.diskDetail),
     url('^api/getAvg',views.getAvg),
+    url('^quickEvaluate.html$', views.quickPage),
+    url('^doQuickEvaluate/', views.doQuickEvaluate),
+    url('^getQuickExample/', views.getQuickExample),
     url('^myadmin/',include("myadmin.urls")),
-    # url('^')
 ]
