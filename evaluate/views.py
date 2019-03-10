@@ -37,13 +37,16 @@ def getDisk(request):
 
     disk = db.query(ADNewDisk).filter(ADNewDisk.NewDiskName == selected_disk).first()
 
-    address = db.query(ADNewDiskAddress).filter(ADNewDiskAddress.NewDiskID == disk.NewDiskID).first()
-
+    try:
+        address = db.query(ADNewDiskAddress).filter(ADNewDiskAddress.NewDiskID == disk.NewDiskID).first()
+    except:
+        return JsonResponse({'error': 'cannot find specified address in House_Basic tables'})
     return render(request, "evaluate/searchinput.html", {'selected_disk': selected_disk, 'address': address})
 
 
 def result(request):
     # 与网页中的name属性匹配
+    diskName = request.GET['diskName']
     district = ''
     address = request.GET['address']
     house_type = '住宅'
@@ -55,7 +58,7 @@ def result(request):
     p = predict.predict()
     p.addCase(district,address,house_type,time,all_floor,floor,acreage)
     res = p.predict()[0]
-    return render(request, "evaluate/result.html", {'result': res})
+    return render(request, "evaluate/result.html", {'result': res, 'diskName': diskName})
 
 
 def adminPage(request):
@@ -64,6 +67,9 @@ def adminPage(request):
 
 def spiderPage(request):
     return render(request, "evaluate/admin_spider.html")
+
+def mapPage(request):
+    return render(request, "evaluate/map.html")
 
 def admin(request):
     from django.utils.datastructures import MultiValueDictKeyError
@@ -313,12 +319,13 @@ def baseQuery(request):
 
 def chooseDisk(request):
     # lineNumber = request.GET['line']
+    # chooseDisk中查的是基础数据表(House_Basic)，地图均价部分查的是2019年1月数据，因此部分小区有出入
     searchInput = request.GET['diskNameInput']
     from sqlalchemy.ext.automap import  automap_base
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=False)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)
@@ -340,7 +347,9 @@ def chooseDisk(request):
 
 
 def diskDetail(request):
-    return render(request, "evaluate/diskDetail.html")
+    diskName = request.GET.get('diskName', None)
+
+    return render(request, "evaluate/diskDetail.html", locals())
 
 def modelControl(request, controlAttribute):
     from .models import models_logs
