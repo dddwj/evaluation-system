@@ -3,13 +3,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>小区详情</title>
+    <title>{{ diskName }}小区详情</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <script src="{% static 'node_modules/_jquery@3.3.1@jquery/dist/jquery.js' %}"></script>
     <link rel="stylesheet" href="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/css/bootstrap.css' %}">
     <script src="{% static 'node_modules/_popper.js@1.14.6@popper.js/dist/popper.js' %}"></script>
     <script src="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/js/bootstrap.js' %}"></script>
 </head>
+<style>
+    .iframe-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        padding-top: 30px;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .iframe-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
 <body>
 
 
@@ -20,19 +37,58 @@
         </div>
         <div class="ml-3">
             <h1>{{ diskName }}</h1>
-            <h3>{{ plate }}</h3>
-            <a href="searchinput.html?diskname={{ diskName }}">给该小区的房子估价</a>
+            <a href="searchinput.html?diskname={{ diskName }}">给该{{ diskName }}的房子估价</a>
         </div>
     </div>
 </div>
+<hr>
+<div class="container mt-3">
+    <h4><img src="{% static 'images/icon-info.jpeg' %}">
+        小区基本信息</h4>
+    <div><strong>楼盘名称:</strong> {{ address.RoadLaneNo }} - {{ property.HousingName }}</div>
+    <div><strong>地理位置:</strong> {{ plate.plateName }}板块 - {{ property.Area }} - {{ property.Module }}</div>
+
+</div>
 
 <div class="container mt-3">
-    <h3>小区所在位置</h3>
+    <h4><img src="{% static 'images/search_ico.png' %}">
+        小区周边</h4>
+{#    经度：{{ coordinates.lng }} 纬度：{{ coordinates.lat }}#}
+    <div class="iframe-container">
+        <script>
+            $(window).resize(function () {
+                map.window.location.reload();
+            });
+        </script>
+        <iframe src="marker.html?lng={{ coordinates.lng }}&lat={{ coordinates.lat }}" scrolling="no" name="map" id="map"></iframe>
+    </div>
+    <hr>
+    <h4><strong>{{ diskName }}</strong>近期价格趋势</h4>
 
-    <h3>小区近期房价趋势</h3>
+    <hr>
+    <h4><strong>{{ plate.plateName }}板块</strong>价格趋势</h4>
 
-    <h3>小区所属板块趋势</h3>
-
+    <hr>
+    <h4><img src="{% static 'images/icon_dt.png' %}">
+        <strong>{{ diskName }}</strong>附近地铁信息</h4>
+    <table class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>线路号</th>
+                <th>站点名</th>
+                <th>距离</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for metro in metros %}
+             <tr>
+                 <td bgcolor="#dc143c"><strong style="font-size: large">{{ metro.line }}</strong>号线</td>
+                 <td><strong>{{ metro.stationName }}</strong>站</td>
+                <td>{{ metro.distance }}米</td>
+             </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 </body>

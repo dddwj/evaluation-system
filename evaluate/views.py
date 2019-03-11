@@ -71,6 +71,12 @@ def spiderPage(request):
 def mapPage(request):
     return render(request, "evaluate/map.html")
 
+def markerPage(request):
+    # 默认点：北京天安门
+    lng = request.GET.get('lng', 116.39)
+    lat = request.GET.get('lat', 39.90923)
+    return render(request, "evaluate/marker.html", locals())
+
 def admin(request):
     from django.utils.datastructures import MultiValueDictKeyError
     try:
@@ -347,7 +353,50 @@ def chooseDisk(request):
 
 
 def diskDetail(request):
-    diskName = request.GET.get('diskName', None)
+    diskName = request.GET.get('diskName', '未指定小区')
+
+    from sqlalchemy.ext.automap import automap_base
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=False)
+    Base = automap_base()
+    Base.prepare(engine, reflect=True)
+    db = sessionmaker(bind=engine)()
+    AD_NewDisk = Base.classes.AD_NewDisk
+    AD_NewDiskAddress = Base.classes.AD_NewDiskAddress
+    AD_Plate = Base.classes.AD_Plate
+    Metro = Base.classes.Metro
+    MetroNearby = Base.classes.MetroNearby
+    AD_Property = Base.classes.AD_Property
+    # AD_Area = Base.classes.AD_Area
+    # AD_Plate = Base.classes.AD_Plate
+    # AD_Module = Base.classes.AD_Module
+
+    try:
+        disk = db.query(AD_NewDisk).filter(AD_NewDisk.NewDiskName == diskName).first()
+        address = db.query(AD_NewDiskAddress).filter(AD_NewDiskAddress.NewDiskID == disk.NewDiskID).first()
+        property = db.query(AD_Property).filter(AD_Property.PropertyID == disk.PropertyID).first()
+        plate = db.query(AD_Plate).filter(AD_Plate.plateName == property.Plate).first()
+        # print(property.Plate, property.Area, property.Module)
+        metro_query = db.execute('select Metro.stationName, Metro.stationID, MetroNearby.distance, MetroNearby.NewDiskID '\
+                                'from Metro '\
+                                'natural join MetroNearby '\
+                                'where MetroNearby.NewDiskID = %s' % disk.NewDiskID).fetchall()
+        metros = [{
+            'stationName': m.stationName,
+            'line': int(m.stationID[0:2]),
+            'distance': m.distance,
+        }for m in metro_query]
+
+        coordinates = {
+            'lng': disk.Coordinates.split(',')[0],
+            'lat': disk.Coordinates.split(',')[1]
+        }
+
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': 'cannot find specified information in House_Basic tables'})
 
     return render(request, "evaluate/diskDetail.html", locals())
 

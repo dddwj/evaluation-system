@@ -34,6 +34,7 @@ urlpatterns = [
     url('^trend.html',views.trend),
     url('^average.html',views.average),
     url('^map.html', views.mapPage),
+    url('^marker.html', views.markerPage),
     url('^api/average/', views.averageQuery),
     url('^api/base/', views.baseQuery),
     url('^api/model/(.+)/$', views.modelControl),
