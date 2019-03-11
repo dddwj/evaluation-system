@@ -26,11 +26,25 @@
         width: 100%;
         height: 100%;
     }
+    .trend-wrapper{
+        position: relative;
+        padding-bottom: 56.25%;
+        padding-top: 30px;
+        height: 0;
+        overflow: hidden;
+    }
+    .trend-wrapper .trend{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 </style>
 <body>
 
 
-<div class="container">
+<div class="container" id="main">
     <div class="row form-inline">
         <div class="">
             <img src="{% static 'images/building.jpeg' %}">
@@ -64,10 +78,14 @@
     </div>
     <hr>
     <h4><strong>{{ diskName }}</strong>近期价格趋势</h4>
-
+    <div class="trend-wrapper">
+        <div class="trend" id="diskTrend" name="diskTrend"></div>
+    </div>
     <hr>
-    <h4><strong>{{ plate.plateName }}板块</strong>价格趋势</h4>
-
+    <h4><strong>{{ property.Area }}</strong>价格趋势</h4>
+    <div class="trend-wrapper">
+        <div class="trend" id="areaTrend" name="areaTrend"></div>
+    </div>
     <hr>
     <h4><img src="{% static 'images/icon_dt.png' %}">
         <strong>{{ diskName }}</strong>附近地铁信息</h4>
@@ -90,6 +108,130 @@
         </tbody>
     </table>
 </div>
+<script src="/static/js/echarts.js"></script>
+<script src="/static/js/vue.js"></script>
+<script src="/static/js/vue-resource@1.5.js"></script>
+<script>
+var vm=new Vue({
+    el:"#main",
+    data:{
+        trendOfDisk:{
+            trendChart : null,
+            option:null,
+            line_data:[]
+        },
+        trendOfArea:{
+            trendChart : null,
+            option:null,
+            line_data:[]
+        },
+    },
+    mounted:function () {
+        //初始化
+        this.seen=false;
+        this.$nextTick(() => {
+            this._queryDiskTrend();
+            this._queryAreaTrend();
+          });
+        //window.onresize=function(){
+        //    this.trendOfDisk.trendChart.resize();
+        //    this.trendOfArea.trendChart.resize();
+        //}
+        window.addEventListener("resize",function(){
+            vm.trendOfDisk.trendChart.resize();
+            vm.trendOfArea.trendChart.resize();
+            console.log(123);
+        })
 
+    },
+    methods:{
+        _queryDiskTrend:function () {
+            this.trendOfDisk.trendChart=echarts.init(document.getElementById("diskTrend"));
+            this.$http.get("api/getAvg?name={{ diskName }}&type=diskName").then(function(msg){
+                var ret=msg.body
+                if(ret.status!="ok"){
+                    alert("查询失败！");
+                    console.log(ret.sql);
+                    return;
+                }
+                var result=ret.result;
+                var y_min=999999;
+                for(let i in result.avg){
+                    if(result.avg[i]<y_min*0.9)
+                        y_min=result.avg[i]*0.9;
+                }
+                y_min-=y_min%1000;
+                this.trendOfDisk.option = {
+                    xAxis: {
+                        type: 'category',
+                        data: result.months
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend:{
+                        data:['房价']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min:y_min
+                    },
+                    series: [{
+                        name:'房价',
+                        data: result.avg,
+                        type: 'line',
+                    }]
+                };
+                console.log(result.avg);
+                console.log(result.months);
+                this.trendOfDisk.trendChart.setOption(this.trendOfDisk.option);
+            })
+        },
+        _queryAreaTrend:function () {
+            this.trendOfArea.trendChart=echarts.init(document.getElementById("areaTrend"));
+            this.$http.get("api/getAvg?name={{ property.Area }}&type=area").then(function(msg){
+                var ret=msg.body
+                if(ret.status!="ok"){
+                    alert("查询失败！");
+                    console.log(ret.sql);
+                    return;
+                }
+                var result=ret.result;
+                var y_min=999999;
+                for(let i in result.avg){
+                    if(result.avg[i]<y_min*0.9)
+                        y_min=result.avg[i]*0.9;
+                }
+                y_min-=y_min%1000;
+                this.trendOfArea.option = {
+                    xAxis: {
+                        type: 'category',
+                        data: result.months
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend:{
+                        data:['房价']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min:y_min
+                    },
+                    series: [{
+                        name:'房价',
+                        data: result.avg,
+                        type: 'line',
+                    }]
+                };
+                console.log(result.avg);
+                console.log(result.months);
+                this.trendOfArea.trendChart.setOption(this.trendOfArea.option);
+            })
+        }
+    },
+
+})
+</script>
 </body>
 </html>
