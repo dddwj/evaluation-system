@@ -164,14 +164,18 @@ def getAvg(request):
     avgPrice=[]
     try:
         for month in monthList:
-            if query_type=="all":
-                sql = "SELECT avg(`averagePrice`)  from `"+month[0]+"`";
-            else:
-                sql = "select avg(averagePrice) from `" + month[0] + "` WHERE `" + query_type + "` like'" + query_name + "%' group by `"+query_type+"`";
-            cursor.execute(sql)
-            result = cursor.fetchone()[0]
-            ret['avg'].append(result)
-            ret['months'].append(month[0])
+            try:
+                if query_type == "all":
+                    sql = "SELECT avg(`averagePrice`)  from `" + month[0] + "`";
+                else:
+                    sql = "select avg(averagePrice) from `" + month[
+                        0] + "` WHERE `" + query_type + "` like '%" + query_name + "%' group by `" + query_type + "`";
+                cursor.execute(sql)
+                result = cursor.fetchone()[0]
+                ret['avg'].append(result)
+                ret['months'].append(month[0])
+            except Exception as e:
+                pass
 
         ret = {'status': "ok", "result":ret}
         return JsonResponse(ret)
