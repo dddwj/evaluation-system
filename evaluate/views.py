@@ -311,6 +311,51 @@ def baseQuery(request):
         return JsonResponse({'status': "invalid api access"})
 
 
+def metroDisk(request):
+    line = request.GET.get('line', None)
+    print(line)
+    # selectedMetroLine = 1  # test line 1
+    from sqlalchemy.ext.automap import automap_base
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8',echo=False)
+    Base = automap_base()
+
+    Base.prepare(engine, reflect=True)
+    db = sessionmaker(bind=engine)()
+
+    Metro = Base.classes.Metro
+    # stationName = db.query(Metro).filter(Metro.line == selectedMetroLine).all()
+
+    # print(stationName[0].stationName)
+    # return render(request, "evaluate/metroDisk.html", {'line': line} )
+    stations = db.query(Metro).filter(Metro.line == line).all()
+    return render(request, "evaluate/metroDisk.html", locals())
+    # return render(request, "evaluate/chooseDisk.html",
+    #               {'searchInput': searchInput, 'disks': disk2})
+
+def metroNearby(request):
+    sName = request.GET.get('stationName', None)
+    from sqlalchemy.ext.automap import automap_base
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy import create_engine
+
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8',
+                           echo=False)
+    Base = automap_base()
+
+    Base.prepare(engine, reflect=True)
+    db = sessionmaker(bind=engine)()
+    nearby = Base.classes.MetroNearby
+    diskNames = db.execute('SELECT DISTINCT NewDiskName FROM AD_NewDisk join MetroNearby join Metro '
+                           'where AD_NewDisk.NewDiskID = MetroNearby.NewDiskID  '
+                           'and Metro.stationID = MetroNearby.stationID '
+                           'and Metro.stationName = \'%s\'' % sName)
+    # diskNames = db.query(nearby).filter(nearby.StationName == stationName).all()
+    return render(request, "evaluate/metroNearby.html", locals())
+
+
 def chooseDisk(request):
     # lineNumber = request.GET['line']
     searchInput = request.GET['diskNameInput']
@@ -318,7 +363,7 @@ def chooseDisk(request):
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy import create_engine
 
-    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=True)
+    engine = create_engine('mysql+pymysql://housing:housing@101.132.154.2/House_Basic?charset=utf8', encoding='utf-8', echo=False)
     Base = automap_base()
 
     Base.prepare(engine, reflect=True)

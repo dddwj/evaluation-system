@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>小区信息</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{#        django服务器上使用#}
+    <script src="{% static 'node_modules/_jquery@3.3.1@jquery/dist/jquery.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/css/bootstrap.css' %}">
+    <script src="{% static 'node_modules/_popper.js@1.14.6@popper.js/dist/popper.js' %}"></script>
+    <script src="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/js/bootstrap.js' %}"></script>
+
+{#        调试时使用#}
+{#        <script src="../../static/node_modules/_jquery@3.3.1@jquery/dist/jquery.js"></script>#}
+{#        <link rel="stylesheet" href="../../static/node_modules/_bootstrap@4.1.3@bootstrap/dist/css/bootstrap.css">#}
+{#        <script src="../../static/node_modules/_popper.js@1.14.6@popper.js/dist/popper.js"></script>#}
+{#        <script src="../../static/node_modules/_bootstrap@4.1.3@bootstrap/dist/js/bootstrap.js"></script>#}
+</head>
+
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">房价评估系统</a>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">首页</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="searchlandmark.html">房价评估</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        房价分析
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="#">小区房价走势</a>
+                        <a class="dropdown-item" href="#">区域均价</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">关于我们</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<br>
+
+<body>
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+			<h3 class="text-left">
+				您查询的是：{{ line }}号线,请从以下站点中选择
+			</h3>
+		</div>
+	</div>
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+{#            {% for i in 3 %}   ----django并不支持所有的python逻辑语言 range不可用#}
+                {% for station in stations %}
+                    <div class="list-group" >
+{#                    <form class="needs-validation form-inline" method="get" id="loginForm" action="metroNearby.html">#}
+{#                        <script type="text/javascript"  src="../js/getUrlParam.js"></script>#}
+{#                        <form class="needs-validation form-inline" method="get" id="loginForm" action="searchinput.html">#}
+{#                            <a href="searchinput.html" class="list-group-item list-group-item-action">{{ disk.NewDiskName }}</a>#}
+{#                            <button class="btn-default btn-large col-sm-3 col-lg-2" type="submit"  id="metroname" name="metrpname"#}
+{#                                    value="{{ station.stationName }}">#}
+{#                                {{ station.stationName }}#}
+{#                            </button>#}
+{#                        </form>#}
+                         <a href="metroNearby.html?stationName={{ station.stationName }}"  class="list-group-item list-group-item-action">{{ station.stationName }}</a>
+{#                    </form>#}
+                    </div>
+                {% endfor %}
+{#            {% endfor %}#}
+		</div>
+	</div>
+</div>
+</body>
+
