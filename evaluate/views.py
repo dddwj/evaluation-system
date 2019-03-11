@@ -336,7 +336,7 @@ def chooseDisk(request):
         disk2 = db.query(ADNewDisk).filter(ADNewDisk.NewDiskName.like("%" + searchInput + "%")).all()
 
         return render(request, "evaluate/chooseDisk.html",
-                      {'searchInput': searchInput, 'disks': disk2})
+                      {'searchInput': searchInput, 'disks': disk2[0:15]})
 
 
 def diskDetail(request):

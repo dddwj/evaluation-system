@@ -62,7 +62,7 @@
 			</h3>
 		</div>
 	</div>
-	<div class="row clearfix">
+	<div>
 		<div class="col-md-12 column">
 {#            {% for i in 3 %}   ----django并不支持所有的python逻辑语言 range不可用#}
                 {% for disk in disks %}
@@ -70,11 +70,16 @@
 {#                        <script type="text/javascript"  src="../js/getUrlParam.js"></script>#}
                         <form class="needs-validation form-inline" method="get" id="loginForm" action="searchinput.html">
 {#                            <a href="searchinput.html" class="list-group-item list-group-item-action">{{ disk.NewDiskName }}</a>#}
-                            <button class="btn-default btn-large col-sm-3 col-lg-2" type="submit"  id="diskname" name="diskname"
-                                    value="{{ disk.NewDiskName }}">
+                            <button class="btn-default col-6 text-center mt-1"
+                                    type="submit"
+                                    id="diskname" name="diskname" value="{{ disk.NewDiskName }}">
                                 {{ disk.NewDiskName }}
                             </button>
                         </form>
+
+                    <button class="btn" onclick="window.location='/diskDetail.html?diskName={{ disk.NewDiskName }}'" value="{{ disk.NewDiskName }}">
+                            查看"{{ disk.NewDiskName }}"详情...
+                        </button>
 
                     </div>
                 {% endfor %}
