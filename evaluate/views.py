@@ -60,10 +60,8 @@ def result(request):
     res = p.predict()[0]
     return render(request, "evaluate/result.html", {'result': res, 'diskName': diskName})
 
-
 def adminPage(request):
     return render(request, "evaluate/admin_login.html")
-
 
 def spiderPage(request):
     return render(request, "evaluate/admin_spider.html")
@@ -89,7 +87,6 @@ def admin(request):
     except MultiValueDictKeyError:
         return render(request, "evaluate/admin_login.html")
 
-
 def adminLoginCheck(func):
     def wrapper(request, *args, **kwargs):
         is_login = request.session.get('IS_LOGIN', False)
@@ -105,8 +102,6 @@ def adminLoginCheck(func):
 def modelPage(request):
     return render(request, "evaluate/admin_model.html")
 
-
-
 # @csrf_protect
 def administrator_login(request):
     if request.method == "POST":
@@ -120,18 +115,15 @@ def administrator_login(request):
     else:
         return render(request, "evaluate/admin_login.html")
 
-
 @adminLoginCheck
 def administrator(request):
     context = {'account': request.session.get("account")}
     return render(request, "evaluate/admin_login.html", context=context)
 
-
 def scrapy(request):
     cache.set('status', request.GET['status'], 600)
     cache.set('amount', request.GET['amount'], 600)
     return HttpResponse('ok')
-
 
 @adminLoginCheck
 def modelPage(request):
@@ -140,10 +132,8 @@ def modelPage(request):
 def trend(request):
     return render(request, "evaluate/trend.html")
 
-
 def average(request):
     return render(request, "evaluate/average.html")
-
 
 def getAvg(request):
     import pymysql
@@ -178,9 +168,6 @@ def getAvg(request):
     except Exception as e:
         sql = "SELECT avg(`averagePrice`)  from `" + month[0] + "`";
         return JsonResponse({"sql": sql})
-
-
-
 
 def averageQuery(request):
     queryAttribute = request.path.split('/')[3]
@@ -285,7 +272,6 @@ def averageQuery(request):
     else:
         return JsonResponse({'status': "invalid api access"})
 
-
 def tableExists(tableName):
     import pymysql
     conn_table = pymysql.connect(host='101.132.154.2', user='housing', passwd='housing', db='House_OnSale',
@@ -299,7 +285,6 @@ def tableExists(tableName):
     if match != 0:
         return True
     return False
-
 
 def baseQuery(request):
     queryAttribute = request.path.split('/')[3]
@@ -321,7 +306,6 @@ def baseQuery(request):
             return JsonResponse({'status': "params not fully specified"})
     else:
         return JsonResponse({'status': "invalid api access"})
-
 
 def chooseDisk(request):
     # lineNumber = request.GET['line']

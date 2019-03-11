@@ -54,9 +54,16 @@
 
 <body>
 <div class="container">
-    <div class="jumbotron"><h1>请输入您房源的详细信息：</h1>
+    <div class="jumbotron">
+        <h1>请输入您房源的详细信息：</h1>
         <p>填写详细信息，有利于更加准确地为您的房源估价</p>
+        <button class="btn btn-primary btn-sm col-md-3 text-center"
+            onclick="window.location='/diskDetail.html?diskName={{ selected_disk }}'"
+            value="{{ selected_disk }}">
+                        查看该小区详情
+        </button>
     </div>
+
 </div>
 
 <br>
