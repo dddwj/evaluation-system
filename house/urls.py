@@ -45,4 +45,7 @@ urlpatterns = [
     url('^doQuickEvaluate/', views.doQuickEvaluate),
     url('^getQuickExample/', views.getQuickExample),
     url('^myadmin/',include("myadmin.urls")),
+    url('^metroDisk.html',views.metroDisk),
+    url('^metroNearby.html', views.metroNearby),
+
 ]
