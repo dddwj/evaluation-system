@@ -40,6 +40,9 @@
         width: 100%;
         height: 100%;
     }
+    .table tbody tr td{
+            vertical-align: middle;
+    }
 </style>
 <body>
 
@@ -90,19 +93,20 @@
     <h4><img src="{% static 'images/icon_dt.png' %}">
         <strong>{{ diskName }}</strong>附近地铁信息</h4>
     <table class="table table-hover table-striped table-bordered">
-        <thead>
-            <tr>
-                <th>线路号</th>
-                <th>站点名</th>
-                <th>距离</th>
-            </tr>
-        </thead>
+{#        <thead>#}
+{#            <tr class="text-center">#}
+{#                <th>线路号</th>#}
+{#                <th>站点名</th>#}
+{#                <th>距离</th>#}
+{#            </tr>#}
+{#        </thead>#}
         <tbody>
             {% for metro in metros %}
-             <tr>
-                 <td bgcolor="#dc143c"><strong style="font-size: large">{{ metro.line }}</strong>号线</td>
-                 <td><strong>{{ metro.stationName }}</strong>站</td>
-                <td>{{ metro.distance }}米</td>
+             <tr class="text-center">
+{#                 <td bgcolor="#dc143c"><strong style="font-size: large">{{ metro.line }}</strong>号线</td>#}
+                 <td><img src="{% static 'images/line' %}{{ metro.line }}.png" style="height: 100px; width: 80px;"></td>
+                 <td><div class="h3"><strong>{{ metro.stationName }}</strong>站</div></td>
+                <td><div class="h3">{{ metro.distance }}米</div></td>
              </tr>
             {% endfor %}
         </tbody>
