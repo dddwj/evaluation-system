@@ -37,7 +37,6 @@ urlpatterns = [
     url('^marker.html', views.markerPage),
     url('^api/average/', views.averageQuery),
     url('^api/base/', views.baseQuery),
-    url('^api/model/(.+)/$', views.modelControl),
     url('^chooseDisk.html',views.chooseDisk),
     url('^diskDetail.html', views.diskDetail),
     url('^api/getAvg',views.getAvg),
