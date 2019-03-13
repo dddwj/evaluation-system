@@ -25,7 +25,7 @@ SECRET_KEY = '=vn4@$8foph3#7z^fwswzb_ja08j2s=xreu*vki5=b@dqf)5*a'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -55,9 +55,10 @@ MIDDLEWARE = [
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-    '127.0.0.1:8080'
+    '127.0.0.1:8080',
+    'evaluation-admin.lz1998.xin'
 )
 CORS_ALLOW_METHODS = (
     'DELETE',
