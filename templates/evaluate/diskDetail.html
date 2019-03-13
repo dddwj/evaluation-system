@@ -44,6 +44,44 @@
             vertical-align: middle;
     }
 </style>
+
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">房价评估系统</a>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html#searchField">查找小区</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">房价评估</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="searchlandmark.html">单套评估</a>
+                        <a class="dropdown-item" href="quickEvaluate.html">批量评估</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        房价分析
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="trend.html">房价走势</a>
+                        <a class="dropdown-item" href="average.html">区域均价</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">浏览历史推荐</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">关于我们</a>
+                </li>
+            </ul>
+        </div>
+</nav>
 <body>
 
 
@@ -237,5 +275,12 @@ var vm=new Vue({
 
 })
 </script>
+<footer class="page-footer font-small pt-3">
+    <!-- Copyright -->
+    <div class="footer-copyright text-center py-3">© 2018 Copyright&nbsp&nbsp&nbsp
+        <a href="http://127.0.0.1:8080"> 管理员登录</a>
+    </div>
+    <!-- Copyright -->
+</footer>
 </body>
 </html>
