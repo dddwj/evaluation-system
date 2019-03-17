@@ -1,0 +1,9 @@
+django
+django-cors-headers
+pymysql
+lightgbm
+pandas
+seaborn
+python-scrapyd-api
+sqlalchemy
+tables
