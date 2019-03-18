@@ -7,8 +7,8 @@ import requests
 from evaluate.YGT import train, predict
 
 SCRAPYD_URL='http://localhost:6800'
-# PROJECT_NAME='lianjia'
-PROJECT_NAME='default'
+PROJECT_NAME='lianjia'
+#PROJECT_NAME='default'
 SPIDER_NAME='lianjia_spider'
 
 scrapyd = ScrapydAPI(SCRAPYD_URL)
