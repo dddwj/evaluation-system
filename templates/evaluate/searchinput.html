@@ -48,14 +48,13 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">浏览历史推荐</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">关于我们</a>
+                    <a class="nav-link" onclick="alert('华东理工大学：欧子文 李政 赵杰羽');">关于我们</a>
                 </li>
             </ul>
         </div>
-</nav><br>
+    </div>
+</nav>
+<br>
 
 <body>
 <div class="container">
@@ -68,12 +67,13 @@
                         查看该小区详情
         </button>
     </div>
-
+    <div class="alert alert-success" id="successAlert" style="display: none;"></div>
+    <div class="alert alert-warning" id="failureAlert" style="display: none;"></div>
 </div>
 
 <br>
 <div class="container">
-    <form method="get" action="result.html">
+    <form method="get" onsubmit="return false;" id="searchInputForm">
         <div class="form-group">
             <label for="diskname" class="offset-1">小区名称：</label>
             <input type="text" class="form-control col-10 col-lg-11 offset-1" id="diskname" name="diskName"
@@ -130,8 +130,32 @@
         </div>
         <br>
         <div class="row justify-content-center">
-            <button type="submit" class="btn btn-primary col-3 col-md-3 col-lg-3 col-xl-3">提交</button>
+            <button type="submit" class="btn btn-primary col-3 col-md-3 col-lg-3 col-xl-3" id="startPrediction">开始估价</button>
         </div>
+        <script type="text/javascript">
+            $("#startPrediction").click(function () {
+                $("#failureAlert").hide();
+                $("#successAlert").hide();
+                console.log($("#searchInputForm").serialize());
+                $.ajax({
+                    type: "GET",
+                    url: "result.html",
+                    data: $("#searchInputForm").serialize(),
+                    async: true,
+                    error: function (request) {
+                        console.log(request);
+                        $("#failureAlert").html("<strong>估价发生错误</strong>，原因为：" + request.statusText);
+                        $("#failureAlert").show();
+                    },
+                    success: function (response) {
+                        console.log(response);
+                        $("#successAlert").html("<strong>估价成功！</strong>该房源均价为：" + response.result + "元/平方米");
+                        $("#successAlert").show();
+
+                    }
+                })
+            })
+        </script>
     </form>
 </div>
 <footer class="page-footer font-small pt-3">

@@ -58,7 +58,7 @@ def result(request):
     p = predict.predict()
     p.addCase(district,address,house_type,time,all_floor,floor,acreage)
     res = p.predict()[0]
-    return render(request, "evaluate/result.html", {'result': res, 'diskName': diskName})
+    return JsonResponse({'status': 'ok', 'result': res, 'diskName': diskName})
 
 def adminPage(request):
     return render(request, "evaluate/admin_login.html")

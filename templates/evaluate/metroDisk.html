@@ -47,53 +47,9 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">浏览历史推荐</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#">关于我们</a>
+                    <a class="nav-link" onclick="alert('华东理工大学：欧子文 李政 赵杰羽');">关于我们</a>
                 </li>
             </ul>
-        </div>
-        <div class="d-flex justify-content-end align-items-center">
-            <a class="btn btn-sm btn-outline-secondary text-white" data-toggle="modal" data-target="#loginModal">
-                <i class="fa fa-user-circle"></i>
-                &nbsp登&nbsp录</a>
-        </div>
-
-        <!-- 登录窗口 -->
-        <div id="loginModal" class="modal fade">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <button class="close" data-dismiss="modal">
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-title">
-                        <h1 class="text-center">登录</h1>
-                    </div>
-                    <div class="modal-body">
-                        <form class="form-group" onsubmit="return false;">
-                            <div class="form-group">
-                                <label>账号</label>
-                                <input id="userID" class="form-control" type="text" placeholder="">
-                            </div>
-                            <div class="form-group">
-                                <label>密码</label>
-                                <input id="password" class="form-control" type="password"
-                                       placeholder="">
-                            </div>
-                            <div class="text-right">
-                                <button class="btn btn-primary" type="submit">登录</button>
-                                <button class="btn btn-danger" data-dismiss="modal">取消</button>
-                            </div>
-                            <a href="" data-toggle="modal" data-dismiss="modal"
-                               data-target="#signupModal">还没有账号？点我注册</a>
-                            <a id="showResult" data-toggle="modal" data-dismiss="modal" data-target="#resultModal"></a>
-                        </form>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </nav>
