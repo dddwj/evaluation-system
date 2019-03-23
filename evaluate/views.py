@@ -461,7 +461,10 @@ def doQuickEvaluate(request):
     work_sheet.write_row(0, 0, ['区县','地址','建造年份','总楼层','房源所在楼层','面积','估价结果(元/平方米)'])
     row_index = 1
     for index,row in df.iterrows():
-        work_sheet.write_row(row_index, 0, [row['区县'], row['地址'], row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'], row['估价结果']])
+        if pd.isnull(row['估价结果']):
+            work_sheet.write_row(row_index, 0,[row['区县'], row['地址'], row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'], '评估发生错误'])
+        else:
+            work_sheet.write_row(row_index, 0, [row['区县'], row['地址'], row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'], row['估价结果']])
         row_index += 1
     work_book.close()
     response = HttpResponse()
