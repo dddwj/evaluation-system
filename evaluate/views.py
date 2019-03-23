@@ -468,10 +468,28 @@ def doQuickEvaluate(request):
     response['Content-Disposition'] = 'attachment;filename="result_%s.xlsx"' % xlsxTime
     return response
 
+# 该方法在生产环境会出现路径错误，找不到文件
+# def getQuickExample(request):
+#     file = open('evaluate/xlsx/in/example.xlsx', 'rb')
+#     response = FileResponse(file)
+#     response['Content-Type'] = 'application/octet-stream'
+#     response['Content-Disposition'] = 'attachment;filename="example.xlsx"'
+#     return response
 
+# 该方法在生产环境可行
 def getQuickExample(request):
-    file = open('evaluate/xlsx/in/example.xlsx', 'rb')
-    response = FileResponse(file)
+    from io import BytesIO
+    import xlsxwriter
+    x_io = BytesIO()
+    work_book = xlsxwriter.Workbook(x_io)
+    work_sheet = work_book.add_worksheet("example")
+    work_sheet.write_row(0,0,['区县','地址','建造年份','总楼层','房源所在楼层','面积'])
+    work_sheet.write_row(1,0,['黄浦区','西藏南路1717弄','2007','30','15','105.3'])
+    work_sheet.write_row(2,0,['浦东新区','严中路300弄','1998','6','3','68'])
+    work_sheet.write_row(3,0,['嘉定区','盘安路1000弄','2015','35','17','205'])
+    work_book.close()
+    response = HttpResponse()
     response['Content-Type'] = 'application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename="example.xlsx"'
+    response['Content-Disposition'] = 'filename="example.xlsx"'
+    response.write(x_io.getvalue())
     return response

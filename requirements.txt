@@ -7,3 +7,4 @@ seaborn
 python-scrapyd-api
 sqlalchemy
 tables
+xlsxwriter
