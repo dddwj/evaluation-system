@@ -461,7 +461,7 @@ def doQuickEvaluate(request):
     #         return x
     # df['估价结果'] = res.apply(lambda x: x if not x.empty() else '找不到')
     # df['估价结果'].fillna("找不到该地址下的小区")
-    # df.to_excel(xlsxPath)
+    df.to_excel(xlsxPath)
     file=open(xlsxPath,'rb')
     response = FileResponse(file)
     response['Content-Type']='application/octet-stream'
