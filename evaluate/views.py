@@ -442,7 +442,7 @@ def doQuickEvaluate(request):
     xlsxFile = request.FILES.get("file", None)
     import time
     xlsxTime = str(time.strftime('%Y-%m-%d-%H%M',time.localtime(time.time())))
-    xlsxPath = 'evaluate/xlsx/out/' + xlsxTime + '.xlsx'
+    # xlsxPath = 'evaluate/xlsx/out/' + xlsxTime + '.xlsx'
     if not xlsxFile:
         return HttpResponseBadRequest
     import pandas as pd
@@ -453,20 +453,29 @@ def doQuickEvaluate(request):
         p.addCase(row["区县"], row['地址'], '住宅',row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'])
     res = p.predict()
     df['估价结果'] = res
-    # df['估价结果'].fillna("找不到该地址下的小区")
-    # def fun(x):
-    #     if x == 'nan':
-    #         return "找不到该地址下的小区"
-    #     else:
-    #         return x
-    # df['估价结果'] = res.apply(lambda x: x if not x.empty() else '找不到')
-    # df['估价结果'].fillna("找不到该地址下的小区")
-    df.to_excel(xlsxPath)
-    file=open(xlsxPath,'rb')
-    response = FileResponse(file)
-    response['Content-Type']='application/octet-stream'
-    response['Content-Disposition'] = 'attachment;filename="result_%s.xlsx"' % xlsxTime
+    from io import BytesIO
+    import xlsxwriter
+    x_io = BytesIO()
+    work_book = xlsxwriter.Workbook(x_io)
+    work_sheet = work_book.add_worksheet("result")
+    work_sheet.write_row(0, 0, ['区县','地址','建造年份','总楼层','房源所在楼层','面积','估价结果(元/平方米)'])
+    row_index = 1
+    for index,row in df.iterrows():
+        work_sheet.write_row(row_index, 0, [row['区县'], row['地址'], row['建造年份'], row['总楼层'], row['房源所在楼层'], row['面积'], row['估价结果']])
+        row_index += 1
+    work_book.close()
+    response = HttpResponse()
+    response['Content-Type'] = 'application/octet-stream'
+    response['Content-Disposition'] = 'filename="result.xlsx"'
+    response.write(x_io.getvalue())
     return response
+    # 该方法在生产环境会出现路径错误，找不到文件
+    # df.to_excel(xlsxPath)
+    # file=open(xlsxPath,'rb')
+    # response = FileResponse(file)
+    # response['Content-Type']='application/octet-stream'
+    # response['Content-Disposition'] = 'attachment;filename="result_%s.xlsx"' % xlsxTime
+    # return response
 
 # 该方法在生产环境会出现路径错误，找不到文件
 # def getQuickExample(request):
