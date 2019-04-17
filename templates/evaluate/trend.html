@@ -32,6 +32,14 @@
         .form-group {
             margin-bottom: -10px;
         }
+        .query-input{
+            margin:20px auto;
+            width:80%;
+        }
+        .query-result{
+            width:100%;
+            height:400px;
+        }
     </style>
 </head>
 
@@ -74,10 +82,7 @@
 <body>
 <div id="main">
     <div class="query-input">
-        <div>
-            <label for="name" >输入你要查询区域的名字</label>
-            <input type="text" id="name" v-model="query_name"><br/>
-        </div>
+
 
         <div class="choose-type">
             <label>选择类型</label>
@@ -85,15 +90,16 @@
             <label for="shanghai">上海市</label>
             <input type="radio" v-model="query_type" id="area" value="area"/>
             <label for="area">区</label>
-            <input type="radio" v-model="query_type" id="plate" value="plate"/>
-            <label for="plate">板块</label>
             <input type="radio" v-model="query_type" id="disk" value="diskName"/>
             <label for="plate">小区</label>
         </div>
+        <div v-show="query_type!='all'">
+            <label for="name" >输入你要查询区域的名字</label>
+            <input type="text" id="name" v-model="query_name"><br/>
+        </div>
         <button @click="queryTrend">查询</button>
-        <div class="query-result" id="query-result" v-show="seen">
-            123
-
+        <div class="query-result" id="query-result">
+            查询失败！
         </div>
 
     </div>
@@ -111,9 +117,8 @@
         el:"#main",
         data:{
             name:'',
-            seen:true,
             query_name:'',
-            query_type:'',
+            query_type:'all',
             myChart : null,
             option:null,
             line_data:[]
@@ -176,7 +181,7 @@
             //初始化
             this.seen=false;
             this.myChart=echarts.init(document.getElementById('query-result'));
-
+            this.queryTrend();
         }
 
     })
