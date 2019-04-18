@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ diskName }}小区详情</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-135498457-2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-135498457-2');
+    </script>
+    <script src="{% static 'node_modules/_jquery@3.3.1@jquery/dist/jquery.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/css/bootstrap.css' %}">
+    <script src="{% static 'node_modules/_popper.js@1.14.6@popper.js/dist/popper.js' %}"></script>
+    <script src="{% static 'node_modules/_bootstrap@4.1.3@bootstrap/dist/js/bootstrap.js' %}"></script>
+</head>
+<style>
+    .iframe-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        padding-top: 30px;
+        height: 0;
+        overflow: hidden;
+    }
+
+    .iframe-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .trend-wrapper{
+        position: relative;
+        padding-bottom: 56.25%;
+        padding-top: 30px;
+        height: 0;
+        overflow: hidden;
+    }
+    .trend-wrapper .trend{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+    .table tbody tr td{
+            vertical-align: middle;
+    }
+</style>
+
+<nav class="navbar navbar-expand-md bg-dark navbar-dark">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">房价评估系统</a>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html#searchField">查找小区</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown">房价评估</a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="searchlandmark.html">单套评估</a>
+                        <a class="dropdown-item" href="quickEvaluate.html">批量评估</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        房价分析
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="trend.html">房价走势</a>
+                        <a class="dropdown-item" href="average.html">区域均价</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" onclick="alert('华东理工大学：欧子文 李政 赵杰羽');">关于我们</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<body>
+
+
+<div class="container" id="main">
+    <div class="row form-inline">
+        <div class="">
+            <img src="{% static 'images/building.jpeg' %}">
+        </div>
+        <div class="ml-3">
+            <h1>{{ diskName }}</h1>
+            <div class="text-inline">
+                <h4 style="color: #5a6268;">抱歉，我们暂时没有{{ diskName }}的详细信息</h4>
+                <button class="btn btn-default" onclick="history.go(-1);">返回上一页</button>
+            </div>
+        </div>
+    </div>
+</div>
+<hr>
+
+<div class="container mt-3">
+    <h4><img src="{% static 'images/icon_dt.png' %}">
+        <strong>{{ diskName }}</strong>附近地铁信息</h4>
+    <table class="table table-hover table-striped table-bordered">
+        <thead>
+            <tr class="text-center">
+                <th>线路号</th>
+                <th>站点名</th>
+                <th>距离</th>
+            </tr>
+        </thead>
+        <tbody>
+             <tr class="text-center">
+                 <td>暂无</td>
+                 <td>暂无</td>
+                <td>暂无</td>
+             </tr>
+        </tbody>
+    </table>
+    <h4><strong>{{ diskName }}</strong>近期价格趋势</h4>
+    <div class="trend-wrapper">
+        <div class="trend" id="diskTrend" name="diskTrend"></div>
+    </div>
+    <hr>
+    <hr>
+</div>
+<script src="https://cdn.bootcss.com/echarts/4.2.1-rc1/echarts.min.js"></script>
+<script src="/static/js/vue.js"></script>
+<script src="/static/js/vue-resource@1.5.js"></script>
+<script>
+var vm=new Vue({
+    el:"#main",
+    data:{
+        trendOfDisk:{
+            trendChart : null,
+            option:null,
+            line_data:[]
+        },
+        trendOfArea:{
+            trendChart : null,
+            option:null,
+            line_data:[]
+        },
+    },
+    mounted:function () {
+        //初始化
+        this.seen=false;
+        this.$nextTick(() => {
+            this._queryDiskTrend();
+            this._queryAreaTrend();
+          });
+        //window.onresize=function(){
+        //    this.trendOfDisk.trendChart.resize();
+        //    this.trendOfArea.trendChart.resize();
+        //}
+        window.addEventListener("resize",function(){
+            vm.trendOfDisk.trendChart.resize();
+            vm.trendOfArea.trendChart.resize();
+            console.log(123);
+        })
+
+    },
+    methods:{
+        _queryDiskTrend:function () {
+            this.trendOfDisk.trendChart=echarts.init(document.getElementById("diskTrend"));
+            this.$http.get("api/getAvg?name={{ diskName }}&type=diskName").then(function(msg){
+                var ret=msg.body
+                if(ret.status!="ok"){
+                    alert("查询失败！");
+                    console.log(ret.sql);
+                    return;
+                }
+                var result=ret.result;
+                var y_min=999999;
+                for(let i in result.avg){
+                    if(result.avg[i]<y_min*0.9)
+                        y_min=result.avg[i]*0.9;
+                }
+                y_min-=y_min%1000;
+                this.trendOfDisk.option = {
+                    xAxis: {
+                        type: 'category',
+                        data: result.months
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend:{
+                        data:['房价']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min:y_min
+                    },
+                    series: [{
+                        name:'房价',
+                        data: result.avg,
+                        type: 'line',
+                    }]
+                };
+                console.log(result.avg);
+                console.log(result.months);
+                this.trendOfDisk.trendChart.setOption(this.trendOfDisk.option);
+            })
+        },
+        _queryAreaTrend:function () {
+            this.trendOfArea.trendChart=echarts.init(document.getElementById("areaTrend"));
+            this.$http.get("api/getAvg?name={{ property.Area }}&type=area").then(function(msg){
+                var ret=msg.body
+                if(ret.status!="ok"){
+                    alert("查询失败！");
+                    console.log(ret.sql);
+                    return;
+                }
+                var result=ret.result;
+                var y_min=999999;
+                for(let i in result.avg){
+                    if(result.avg[i]<y_min*0.9)
+                        y_min=result.avg[i]*0.9;
+                }
+                y_min-=y_min%1000;
+                this.trendOfArea.option = {
+                    xAxis: {
+                        type: 'category',
+                        data: result.months
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend:{
+                        data:['房价']
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min:y_min
+                    },
+                    series: [{
+                        name:'房价',
+                        data: result.avg,
+                        type: 'line',
+                    }]
+                };
+                console.log(result.avg);
+                console.log(result.months);
+                this.trendOfArea.trendChart.setOption(this.trendOfArea.option);
+            })
+        }
+    },
+
+})
+</script>
+<footer class="page-footer font-small pt-3">
+    <!-- Copyright -->
+    <div class="footer-copyright text-center py-3">© 2018 Copyright&nbsp&nbsp&nbsp
+        <a href="http://evaluation-admin.lz1998.xin"> 管理员登录</a>
+    </div>
+    <!-- Copyright -->
+</footer>
+</body>
+</html>

@@ -40,7 +40,9 @@ def getDisk(request):
     try:
         address = db.query(ADNewDiskAddress).filter(ADNewDiskAddress.NewDiskID == disk.NewDiskID).first()
     except:
-        return JsonResponse({'error': 'cannot find specified address in House_Basic tables'})
+        diskName = selected_disk
+        # return JsonResponse({'error': 'cannot find specified address in House_Basic tables'})
+        return render(request, "evaluate/diskDetailError.html", locals())
     return render(request, "evaluate/searchinput.html", {'selected_disk': selected_disk, 'address': address})
 
 
@@ -430,7 +432,8 @@ def diskDetail(request):
 
     except Exception as e:
         print(e)
-        return JsonResponse({'error': 'cannot find specified information in House_Basic tables'})
+        return render(request, "evaluate/diskDetailError.html", locals())
+        # return JsonResponse({'error': 'cannot find specified information in House_Basic tables'})
 
     return render(request, "evaluate/diskDetail.html", locals())
 
