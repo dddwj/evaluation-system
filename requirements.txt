@@ -1,5 +1,5 @@
 Twisted==18.9.0
-django==2.1.6
+django==2.1.7
 django-cors-headers
 pymysql
 lightgbm
