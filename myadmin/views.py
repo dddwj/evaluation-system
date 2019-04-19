@@ -15,6 +15,9 @@ scrapyd = ScrapydAPI(SCRAPYD_URL)
 
 # Create your views here.
 
+def index(request):
+    return render(request, "myadmin/index.html")
+
 def loginCheck(func):
     def wrapper(request, *args, **kwargs):
         is_login = request.session.get('IS_LOGIN', False)

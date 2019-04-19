@@ -4,6 +4,7 @@ from myadmin import views
 
 
 urlpatterns = [
+    url(r'^$', views.index),
     url(r'^api/login', views.login),
     url(r'^api/scrapy/job/list', views.scrapy_job_list),
     url(r'^api/scrapy/job/schedule', views.scrapy_job_schedule),
